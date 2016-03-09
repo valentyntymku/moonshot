@@ -1,0 +1,4 @@
+site_name: Moonshot
+pages:
+- Home: index.md
+- Contribute: contribute.md
