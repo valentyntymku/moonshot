@@ -1,0 +1,62 @@
+{
+    "variables": {
+        "build": "{{env `USER`}}-{{timestamp}}",
+        "iam_instance_profile": "content-hub_packer"
+    },
+    "builders": [
+        {
+            "type": "amazon-ebs",
+            "region": "us-east-1",
+            "source_ami": "ami-5c207736",
+            "ami_regions": ["ap-northeast-1", "ap-southeast-1", "ap-southeast-2", "eu-central-1", "eu-west-1", "us-west-2"],
+            "iam_instance_profile": "{{user `iam_instance_profile`}}",
+            "instance_type": "t2.micro",
+            "ami_name": "moonshot-sample-app {{user `build`}}",
+            "ssh_username": "ubuntu",
+            "tags": {
+                "generator": "packer"
+            }
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "file",
+            "source": "{{template_dir}}/ubuntu-14.04/etc/nginx/sites-available/default",
+            "destination": "/tmp/nginx-default"
+        },
+        {
+            "type": "shell",
+            "inline": [
+                "sudo apt-get update",
+                "sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::=\"--force-confnew\" --force-yes -fuy dist-upgrade",
+
+                "sudo apt-get update",
+                "sudo apt-get install --no-install-recommends -y curl ntp nginx python-pip python-setuptools python-software-properties",
+
+                "sudo mv /tmp/nginx-default /etc/nginx/sites-available/default",
+                "sudo chown root:root /etc/nginx/sites-available/default",
+
+                "sudo add-apt-repository -y ppa:brightbox/ruby-ng",
+                "sudo add-apt-repository -y ppa:ondrej/php5-5.6",
+                "sudo apt-get update",
+                "sudo apt-get install --no-install-recommends -y --force-yes php5-fpm ruby2.0",
+                "sudo sed -i.bak 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php5/fpm/php.ini",
+                "sudo service php5-fpm restart",
+
+                "sudo pip install awscli",
+                "sudo easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz",
+
+                "aws s3 cp s3://aws-codedeploy-us-east-1/latest/install /tmp/install.sh --region us-east-1",
+                "chmod +x /tmp/install.sh",
+                "sudo /tmp/install.sh auto",
+                "rm /tmp/install.sh",
+
+                "sudo apt-get clean",
+                "sudo rm -rf /var/cache/apt/*",
+                "sudo rm -rf /var/lib/apt/lists/*",
+                "sudo rm -rf /tmp/*",
+                "sudo rm -rf /var/tmp/*"
+            ]
+        }
+    ]
+}
