@@ -1,0 +1,2 @@
+# Required to use the newer mkdocs python package
+mkdocs == 0.15.3
