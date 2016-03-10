@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'moonshot'
+
+# Set up Moonshot tooling for our environment.
+class MoonshotSampleApp < Moonshot::CLI
+  self.application_name = 'moonshot-sample-app'
+  self.artifact_repository = S3Bucket.new('my-s3-bucket')
+  self.build_mechanism = Script.new('bin/build.sh')
+  self.deployment_mechanism = CodeDeploy.new(asg: 'AutoScalingGroup')
+end
+
+MoonshotSampleApp.start

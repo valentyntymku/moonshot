@@ -2,12 +2,16 @@ site_name: Moonshot
 pages:
 - Home: 'index.md'
 - Example: example.md
-- Plugins: plugins.md
-- Mechanisms: mechanisms.md
 - User Guide:
-    - 'Including Moonshot in your project': 'user-guide/include_in_your_project.md'
-    - 'Working with parent stacks': 'user-guide/parent_stacks.md'
-    - 'Overriding Stack Parameters': 'user-guide/stack_parameters_override.md'
+  - 'CLI Commands': 'user-guide/cli.md'
+  - 'Including Moonshot in your project': 'user-guide/include_in_your_project.md'
+  - 'Working with parent stacks': 'user-guide/parent_stacks.md'
+  - 'Overriding Stack Parameters': 'user-guide/stack_parameters_override.md'
+- Mechanisms:
+  - 'Artifact Repository': 'mechanisms/artifact-repository.md'
+  - 'Build': 'mechanisms/build.md'
+  - 'Deployment': 'mechanisms/deployment.md'
+- Plugins: plugins.md
 - About:
-    - 'How to Contribute': 'about/contribute.md'
-    - 'License': 'about/license.md'
+  - 'How to Contribute': 'about/contribute.md'
+  - 'License': 'about/license.md'
