@@ -16,13 +16,17 @@ class Moonshot::DeploymentMechanism::CodeDeploy # rubocop:disable ClassLength
   # @param asg [String]
   #   The logical name of the AutoScalingGroup to create and manage a Deployment
   #   Group for in CodeDeploy.
+  # @param role [String]
+  #   IAM role with AWSCodeDeployRole policy. CodeDeployRole is considered as
+  #   default role if its not specified.
   # @param app_name [String, nil] (nil)
   #   The name of the CodeDeploy Application and Deployment Group. By default,
   #   this is the same as the stack name, and probably what you want. If you
   #   have multiple deployments in a single Stack, they must have unique names.
-  def initialize(asg:, app_name: nil)
+  def initialize(asg:, role: 'CodeDeployRole', app_name: nil)
     @asg_logical_id = asg
     @app_name = app_name
+    @codedeploy_role = role
   end
 
   def post_create_hook
@@ -180,9 +184,9 @@ class Moonshot::DeploymentMechanism::CodeDeploy # rubocop:disable ClassLength
   end
 
   def role
-    iam_client.get_role(role_name: 'CodeDeployRole').role
+    iam_client.get_role(role_name: @codedeploy_role).role
   rescue Aws::IAM::Errors::NoSuchEntity
-    raise Thor::Error, 'Did not find an IAM Role: CodeDeployRole'
+    raise Thor::Error, "Did not find an IAM Role: #{@codedeploy_role}"
   end
 
   def delete_deployment_group
@@ -281,8 +285,8 @@ class Moonshot::DeploymentMechanism::CodeDeploy # rubocop:disable ClassLength
   end
 
   def doctor_check_code_deploy_role
-    iam_client.get_role(role_name: 'CodeDeployRole').role
-    success('CodeDeployRole exists.')
+    iam_client.get_role(role_name: @codedeploy_role).role
+    success("#{@codedeploy_role} exists.")
   rescue => e
     help = <<-EOF
 Error: #{e.message}
@@ -290,7 +294,7 @@ Error: #{e.message}
 For information on provisioning an account for use with CodeDeploy, see:
 http://docs.aws.amazon.com/codedeploy/latest/userguide/how-to-create-service-role.html
     EOF
-    critical('Could not find CodeDeployRole, ', help)
+    critical("Could not find #{@codedeploy_role}, ", help)
   end
 
   def doctor_check_auto_scaling_resource_defined
