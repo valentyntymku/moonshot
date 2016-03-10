@@ -139,7 +139,8 @@ module Moonshot
 
     desc :doctor, 'Run configuration checks against current environment.'
     def doctor
-      controller.doctor
+      success = controller.doctor
+      raise Thor::Error, 'One or more checks failed.' unless success
     end
   end
 end

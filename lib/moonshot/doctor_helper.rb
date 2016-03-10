@@ -15,6 +15,7 @@ module Moonshot
     private
 
     def run_all_checks
+      success = true
       puts
       puts self.class.name.split('::').last
       private_methods.each do |meth|
@@ -22,13 +23,17 @@ module Moonshot
           send(meth) if meth =~ /^doctor_check_/
         rescue DoctorCritical
           # Stop running checks in this Mechanism.
+          success = false
           break
         rescue => e
+          success = false
           print '  ✗ '.red
           puts "Exception while running check: #{e.class}: #{e.message.lines.first}"
           break
         end
       end
+
+      success
     end
 
     def success(str)
