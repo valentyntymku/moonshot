@@ -9,13 +9,11 @@ The software is relying on a single CloudFormation stack and supported by plugga
 - A BuildMechanism creates a release artifact.
 - A ArtifactRepository stores the release artifacts.
 
-You can read [nicely formatted documentation here][1].
-
-Discussions and support: Please see the issues in the current repository
+You can read [nicely formatted documentation][1] on how Moonshot works and how to extend it. We also want to [help you contribute and answer all your questions][2] on how Moonshot is maintained.
 
 ## Super Basic Installation Instructions
 
-Seriously, go and see our [nicely formatted documentation here][1] for more details.
+Seriously, go and see our [nicely formatted documentation][1] for more details.
 Add this line to your application's Gemfile:
 
     gem 'moonshot'
@@ -29,3 +27,4 @@ Or install it yourself as:
     $ gem install moonshot
 
 [1]: http://moonshot.readthedocs.org/en/latest/
+[2]: http://moonshot.readthedocs.org/en/latest/about/contribute

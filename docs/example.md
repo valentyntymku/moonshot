@@ -1,18 +1,36 @@
-# Configuring an AWS account
+# Example usage of the Moonshot Library
 
-## CodeDeploy Role
+This example assumes you have access to an Amazon AWS account and have sufficient permissions to create roles and resources.
+
+## Configuring your AWS account
+
+### CodeDeploy Role
 
 Create a role called CodeDeployRole with the AWSCodeDeployRole policy
 
-```
-aws iam create-role --role-name CodeDeployRole --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Sid":"","Effect":"Allow","Principal":{"Service":["codedeploy.amazonaws.com"]},"Action":"sts:AssumeRole"}]}'
+```bash
+aws iam create-role --role-name CodeDeployRole --assume-role-policy-document '{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "codedeploy.amazonaws.com"
+        ]
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}'
 aws iam attach-role-policy --role-name CodeDeployRole --policy-arn arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
 ```
 
-# Basic Usage
+## Create a Ruby wrapper
 
-The base class is a subclass of Thor, so you can extend it using all the normal
-Thor stuff. Here's a really basic example using all the defaults:
+Now, let's create a ruby wrapper that implements the Moonshot tool and makes your CLI.
+The base class is a subclass of Thor, so you can extend it using the [full Thor extensibility](http://whatisthor.com/). Here's a basic example using all the defaults:
 
 ```ruby
 #!/usr/bin/env ruby
@@ -25,29 +43,16 @@ class MyService < Moonshot::CLI
   self.artifact_repository = S3Bucket.new('my-service-builds')
   self.build_mechanism = Script.new('build/script.sh')
   self.deployment_mechanism = CodeDeploy.new(asg: 'AutoScalingGroup')
-
-  desc 'my-custom-function'
-  def my_custom_function
-    puts "<:3)~~ eek! a mouse!"
-  end
 end
 
-begin
-  MyService.start
-rescue => e
-  warn "Uncaught exception: #{e.class}: #{e.message}"
-  warn "at: #{e.backtrace.first}"
-  exit(1)
-end
+MyService.start
 ```
 
 This example assumes:
-- You have a CloudFormation JSON template in "cloud_formation/my-service.json".
+- You have a CloudFormation JSON template in folder called "cloud_formation/my-service.json".
 - You have an S3 bucket called "my-service-builds".
 - You have a script in "script/build.sh" that will build a tarball output.tar.gz.
 - You have a working CodeDeploy setup, including the CodeDeployRole.
-- You have some need to display an ASCII mouse to the terminal with your release
-  tooling.
 
 If all that is true, you can now deploy your software to a new stack with:
 ```
