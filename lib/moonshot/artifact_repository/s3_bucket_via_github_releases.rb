@@ -71,8 +71,8 @@ module Moonshot::ArtifactRepository
       Dir.mktmpdir('github_to_s3', Dir.getwd) do |tmpdir|
         Dir.chdir(tmpdir) do
           sh_out("hub release download #{version}")
-          file = File.open(Dir.glob("*#{version}*.tar.gz").fetch(0))
-          s3_client.put_object(key: s3_name, body: file, bucket: bucket_name)
+          file = Dir.glob("*#{version}*.tar.gz").fetch(0)
+          upload_to_s3(file, s3_name)
         end
       end
     end
