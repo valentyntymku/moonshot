@@ -1,5 +1,5 @@
 site_name: Moonshot
-theme: mkdocs
+theme: 'mkdocs'
 pages:
 - Home: 'index.md'
 - Example: example.md

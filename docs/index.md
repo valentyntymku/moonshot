@@ -10,6 +10,8 @@ by pluggable systems:
 - A BuildMechanism creates a release artifact.
 - A ArtifactRepository stores the release artifacts.
 
+![General Flow](moonshot.png "General Flow")
+
 ## Design Goals
 
 These are core ideas to the creation of this project. Not all are met to the
