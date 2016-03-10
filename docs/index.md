@@ -1,4 +1,4 @@
-# <img src="docs/logo.png" width="48"> Moonshot
+# <img src="logo.png" width="48"> Moonshot
 _Because releasing services shouldn't be a moonshot._
 
 ## Overview
