@@ -20,7 +20,7 @@ shared_examples 'with a working moonshot application' do
 
   before(:all) do
     # Force aws-sdk to load metadata before FakeFS takes over.
-    Aws::CloudFormation::Client.new
+    Aws::CloudFormation::Client.new(region: 'us-rspec-1')
   end
 
   before(:each) do
