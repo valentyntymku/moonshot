@@ -60,7 +60,9 @@ module Moonshot
         end
       end
 
-      should_wait ? wait_for_stack_state(:stack_update_complete, 'updated') : true
+      success = should_wait ? wait_for_stack_state(:stack_update_complete, 'updated') : true
+      raise Thor::Error, 'Failed to update the CloudFormation Stack.' unless success
+      success
     end
 
     def delete
