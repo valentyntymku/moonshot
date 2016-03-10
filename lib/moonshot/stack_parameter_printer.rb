@@ -7,21 +7,21 @@ module Moonshot
       @table = table
     end
 
-    def print # rubocop:disable AbcSize
+    def print
       p_table = @table.add_leaf('Stack Parameters')
       overrides = @stack.overrides
-      rows = @stack.parameters.sort_by(&:parameter_key).map do |parm|
+      rows = @stack.parameters.sort.map do |key, value|
         t_param = @stack.template.parameters.find do |p|
-          p.name == parm.parameter_key
+          p.name == key
         end
 
         properties = determine_change(t_param ? t_param.default : nil,
-                                      overrides[parm.parameter_key],
-                                      parm.parameter_value)
+                                      overrides[key],
+                                      value)
 
         [
-          parm.parameter_key << ':',
-          format_value(parm.parameter_value),
+          "#{key}:",
+          format_value(value),
           format_properties(properties)
         ]
       end
