@@ -13,4 +13,19 @@ You can read [nicely formatted documentation here][1].
 
 Discussions and support: Please see the issues in the current repository
 
+## Super Basic Installation Instructions
+
+Seriously, go and see our [nicely formatted documentation here][1] for more details.
+Add this line to your application's Gemfile:
+
+    gem 'moonshot'
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install moonshot
+
 [1]: http://moonshot.readthedocs.org/en/latest/

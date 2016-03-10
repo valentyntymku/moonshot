@@ -2,3 +2,9 @@ site_name: Moonshot
 pages:
 - Home: index.md
 - Contribute: contribute.md
+- Example: example.md
+- Parent Stacks: parent_stacks.md
+- Plugins: plugins.md
+- Include in your project: include_in_your_project.md
+- Mechanisms: mechanisms.md
+- Stack Parameters Override: stack_parameters_override.md
