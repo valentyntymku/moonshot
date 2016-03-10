@@ -1,6 +1,6 @@
 ## Parent Stacks
 
-Since 0.5.3, Moonshot supports referencing another CloudFormation stack as a
+Moonshot supports referencing another CloudFormation stack as a
 "Parent" during creation time. This relationship is used only for creation,
 where any outputs of that stack that match names of the parameters for the local
 stack will be used as parameters, and saved into a local .yml file for future

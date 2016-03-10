@@ -5,15 +5,9 @@ require 'moonshot'
 # Set up Moonshot tooling for our environment.
 class MoonshotSampleApp < Moonshot::CLI
   self.application_name = 'moonshot-sample-app'
-  self.artifact_repository = S3Bucket.new('{{bucket}}')
+  self.artifact_repository = S3Bucket.new('my-s3-bucket')
   self.build_mechanism = Script.new('bin/build.sh')
   self.deployment_mechanism = CodeDeploy.new(asg: 'AutoScalingGroup')
 end
 
-begin
-  MoonshotSampleApp.start
-rescue => e
-  warn "Uncaught exception: #{e.class}: #{e.message}"
-  warn "at: #{e.backtrace.first}"
-  exit(1)
-end
+MoonshotSampleApp.start

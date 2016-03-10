@@ -1,5 +1,5 @@
 ---
-ArtifactBucket: "{{bucket}}"
+ArtifactBucket: "my-s3-bucket"
 AvailabilityZone1: "us-east-1a"
 AvailabilityZone2: "us-east-1b"
 DesiredCapacity: "2"
