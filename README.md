@@ -9,6 +9,8 @@ The software is relying on a single CloudFormation stack and supported by plugga
 - A BuildMechanism creates a release artifact.
 - A ArtifactRepository stores the release artifacts.
 
-Read the documentation at __insert_link_here_to_read_the_docs__ or see the docs folder.
+You can read [nicely formatted documentation here][1].
 
 Discussions and support: Please see the issues in the current repository
+
+[1]: http://moonshot.readthedocs.org/en/latest/
