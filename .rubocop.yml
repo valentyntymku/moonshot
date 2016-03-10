@@ -4,6 +4,7 @@ AllCops:
   Exclude:
     - '*.gemspec'
     - 'vendor/**/*'
+    - 'sample/bin/aws-codedeploy-samples/**/*'
 Metrics/AbcSize:
   Max: 20
 Metrics/MethodLength:
