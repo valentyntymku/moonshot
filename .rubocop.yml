@@ -3,6 +3,7 @@ AllCops:
   TargetRubyVersion: 2.2
   Exclude:
     - '*.gemspec'
+    - 'vendor/**/*'
 Metrics/AbcSize:
   Max: 20
 Metrics/MethodLength:
