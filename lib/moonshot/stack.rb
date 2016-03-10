@@ -274,33 +274,36 @@ module Moonshot
       events.show_only_errors unless @config.show_all_events
 
       @ilog.start_threaded "Waiting for #{stack_name} to be successfully #{past_tense_verb}." do |s|
-        cf_client.wait_until(wait_target, stack_name: stack_id) do |w|
-          w.delay = 10
-          w.max_attempts = 180 # 30 minutes.
-          w.before_wait do |attempt, resp|
-            begin
-              events.latest_events.each do |event|
-                @ilog.error(format_event(event))
+        begin
+          cf_client.wait_until(wait_target, stack_name: stack_id) do |w|
+            w.delay = 10
+            w.max_attempts = 180 # 30 minutes.
+            w.before_wait do |attempt, resp|
+              begin
+                events.latest_events.each { |e| @ilog.error(format_event(e)) }
+                # rubocop:disable Lint/HandleExceptions
+              rescue Aws::CloudFormation::Errors::ValidationError
+                # Do nothing.  The above event logging block may result in
+                # a ValidationError while waiting for a stack to delete.
               end
-            # rubocop:disable Lint/HandleExceptions
-            rescue Aws::CloudFormation::Errors::ValidationError
-              # Do nothing.  The above event logging block may result in
-              # a ValidationError while waiting for a stack to delete.
-            end
-            # rubocop:enable Lint/HandleExceptions
+              # rubocop:enable Lint/HandleExceptions
 
-            if attempt == w.max_attempts - 1
-              s.failure "#{stack_name} was not #{past_tense_verb} after 30 minutes."
-              result = false
+              if attempt == w.max_attempts - 1
+                s.failure "#{stack_name} was not #{past_tense_verb} after 30 minutes."
+                result = false
 
-              # We don't want the interactive logger to catch an exception.
-              throw :success
+                # We don't want the interactive logger to catch an exception.
+                throw :success
+              end
+              s.continue "Waiting for CloudFormation Stack to be successfully #{past_tense_verb}, current status '#{resp.stacks.first.stack_status}'." # rubocop:disable LineLength
             end
-            s.continue "Waiting for CloudFormation Stack to be successfully #{past_tense_verb}, current status '#{resp.stacks.first.stack_status}'." # rubocop:disable LineLength
           end
-        end
 
-        s.success "#{stack_name} successfully #{past_tense_verb}." if result
+          s.success "#{stack_name} successfully #{past_tense_verb}." if result
+        rescue Aws::Waiters::Errors::FailureStateError
+          result = false
+          s.failure "#{stack_name} failed to update."
+        end
       end
 
       result
