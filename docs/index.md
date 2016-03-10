@@ -1,6 +1,8 @@
 # Moonshot
 _Because releasing services shouldn't be a moonshot._
 
+![Moonshot](logo.png)
+
 ## Overview
 
 Moonshot is a Ruby gem for provisioning environments in AWS using a CLI.
