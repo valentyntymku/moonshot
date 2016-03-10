@@ -66,11 +66,15 @@ module Moonshot
 
     def doctor
       # @todo use #run_hook when Stack becomes an InfrastructureProvider
-      stack.doctor_hook
-      run_hook(:build, :doctor)
-      run_hook(:repo, :doctor)
-      run_hook(:deploy, :doctor)
-      run_plugins(:doctor)
+      success = true
+      success &&= stack.doctor_hook
+      success &&= run_hook(:build, :doctor)
+      success &&= run_hook(:repo, :doctor)
+      success &&= run_hook(:deploy, :doctor)
+      results = run_plugins(:doctor)
+
+      success = false if results.value?(false)
+      success
     end
 
     def stack
@@ -125,9 +129,13 @@ module Moonshot
     end
 
     def run_plugins(type)
+      results = {}
       @config.plugins.each do |plugin|
-        plugin.send(type, resources) if plugin.respond_to?(type)
+        next unless plugin.respond_to?(type)
+        results[plugin] = plugin.send(type, resources)
       end
+
+      results
     end
 
     def get_mechanism(type)
