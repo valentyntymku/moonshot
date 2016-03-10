@@ -26,7 +26,7 @@ class Moonshot::ArtifactRepository::S3Bucket
     key = filename_for_version(version_name)
 
     ilog.start_threaded "Uploading #{file} to s3://#{bucket_name}/#{key}" do |s|
-      s3_client.put_object(key: key, body: File.open(file), bucket: bucket_name)
+      upload_to_s3(file, key)
       s.success "Uploaded s3://#{bucket_name}/#{key} successfully."
     end
   end
@@ -36,6 +36,15 @@ class Moonshot::ArtifactRepository::S3Bucket
   end
 
   private
+
+  def upload_to_s3(file, key)
+    s3_client.put_object(
+      key: key,
+      body: File.open(file),
+      bucket: @bucket_name,
+      storage_class: 'STANDARD_IA'
+    )
+  end
 
   def doctor_check_bucket_exists
     s3_client.get_bucket_location(bucket: @bucket_name)
@@ -49,7 +58,12 @@ class Moonshot::ArtifactRepository::S3Bucket
   end
 
   def doctor_check_bucket_writable
-    s3_client.put_object(key: 'test-object', body: '', bucket: @bucket_name)
+    s3_client.put_object(
+      key: 'test-object',
+      body: '',
+      bucket: @bucket_name,
+      storage_class: 'REDUCED_REDUNDANCY'
+    )
     s3_client.delete_object(key: 'test-object', bucket: @bucket_name)
     success 'Bucket is writable, new builds can be uploaded.'
   rescue => e
