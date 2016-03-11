@@ -23,7 +23,7 @@ class MoonshotSampleApp < Moonshot::CLI
 ...
 ```
 
-## Github Release
+## GithubRelease
 
 A build mechanism that creates a tag and GitHub release. Could be used to delegate other building steps after GitHub release is created.
 
@@ -41,7 +41,7 @@ class MoonshotSampleApp < Moonshot::CLI
 ...
 ```
 
-## Travis Deploy
+## TravisDeploy
 
 The Travis Build Mechanism waits for Travis-CI to finish building a job matching the VERSION (see above) and the output of the travis job has to be 'BUILD=1'. Can be used to make sure that the travis job for the repository for that version actually finished before the deployment step can be executed.
 
