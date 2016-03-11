@@ -6,6 +6,7 @@ _Because releasing services shouldn't be a moonshot._
 Moonshot is a Ruby gem for provisioning environments in AWS using a CLI.
 The environments are centered around a single CloudFormation stack and supported
 by pluggable systems:
+
 - A DeploymentMechanism controls releasing code.
 - A BuildMechanism creates a release artifact.
 - A ArtifactRepository stores the release artifacts.
@@ -24,6 +25,11 @@ should aspire to meet them with each iteration.
   so teams are free to use what works best for them.
 - Verbosity: The output of core Moonshot code should explain in detail what
   changes are being made, so knowledge is shared and not abstracted.
+
+## Existing limitations
+
+- Moonshot does not support detailed error logging from Cloudformation substacks.
+- Moonshot does not support a non-local cloudformation file.
 
 ## Installation
 
@@ -44,6 +50,8 @@ After installation, there is still some work required. Follow the [example docum
 ## Getting started
 
 The Moonshot tool has been designed to be an extensible library for your specific use-case. Interested in how it can be used? See our [example documentation](example.md). The example doc uses the files shown in the [sample directory](https://github.com/acquia/moonshot/tree/master/sample) so you can figure out how to modify this for your own deployment strategy.
+
+We also want to [help you contribute and answer all your questions](http://moonshot.readthedocs.org/en/latest/about/contribute) on how Moonshot is maintained.
 
 ## Requirements
 
