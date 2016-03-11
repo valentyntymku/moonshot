@@ -56,3 +56,8 @@ We also want to [help you contribute and answer all your questions](http://moons
 ## Requirements
 
 - Ruby 2.1 or higher
+
+## Attributions
+
+Thanks to [Acquia Inc.](https://acquia.com) for sponsoring the time to work on this tool.
+Thanks to [Ted](https://github.com/tottey) for the funky logo.
