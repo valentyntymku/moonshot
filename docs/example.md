@@ -1,6 +1,6 @@
 # Example usage of the Moonshot Library
 
-In this example we are going to use the resources of the sample directo
+In this example we are going to use the resources in the sample directory.
 This example assumes you have access to an Amazon AWS account and have sufficient permissions to create roles and resources.
 
 ## So, what's in it for me?
