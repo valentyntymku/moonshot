@@ -47,7 +47,7 @@ Or install it yourself as:
 
     $ gem install moonshot
 
-After installation, there is still some work required. Follow the [example documentation](example.md) as described below to dig in!
+After installation, there is still some work required. Follow the [example documentation](docs/example.md) as described below to dig in!
 
 ## Getting started
 
