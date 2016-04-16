@@ -6,10 +6,12 @@
             "Description" : "The S3 bucket that contains the build artifacts that CodeDeploy will deploy."
         },
         "AvailabilityZone1" : {
-            "Type" : "AWS::EC2::AvailabilityZone::Name"
+            "Type": "AWS::EC2::AvailabilityZone::Name",
+            "Default": "us-east-1a"
         },
         "AvailabilityZone2" : {
-            "Type" : "AWS::EC2::AvailabilityZone::Name"
+            "Type": "AWS::EC2::AvailabilityZone::Name",
+            "Default": "us-east-1b"
         },
         "DesiredCapacity" : {
             "Type" : "Number",
@@ -30,7 +32,7 @@
             "ap-southeast-2" :   { "AMI" : "" },
             "eu-central-1" :     { "AMI" : "" },
             "eu-west-1" :        { "AMI" : "" },
-            "us-east-1" :        { "AMI" : "" },
+            "us-east-1" :        { "AMI" : "ami-08111162" },
             "us-west-2" :        { "AMI" : "" }
         }
     },
@@ -245,12 +247,20 @@
                 "AssociatePublicIpAddress" : true,
                 "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ] },
                 "IamInstanceProfile" : { "Ref" : "InstanceProfile" },
-                "InstanceType" : "t2.micro",
+                "InstanceType" : "t2.nano",
                 "SecurityGroups" : [ { "Ref" : "SecurityGroup" } ],
+                "KeyName": "default",
                 "UserData" : {
-                    "Fn::Base64" : { "Fn::Join" : [ "", [
+                    "Fn::Base64" : { "Fn::Join" : [ "\n", [
                         "#!/bin/bash -v",
-                        "\necho '<:3)~~ eek! a mouse!'"
+
+                        "sudo yum -y update",
+                        "sudo yum -y install curl ntp python-pip python-setuptools python-software-properties php56",
+
+                        "curl https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install > /tmp/install.sh",
+                        "chmod +x /tmp/install.sh",
+                        "sudo /tmp/install.sh auto",
+                        "rm /tmp/install.sh"
                     ] ] }
                 }
             }
@@ -264,7 +274,7 @@
                     { "Ref" : "AvailabilityZone2" }
                 ],
                 "DesiredCapacity" : { "Ref" : "DesiredCapacity" },
-                "HealthCheckGracePeriod" : "600",
+                "HealthCheckGracePeriod" : "900",
                 "HealthCheckType" : "ELB",
                 "LaunchConfigurationName" : { "Ref" : "LaunchConfiguration" },
                 "LoadBalancerNames" : [ { "Ref" : "LoadBalancer" } ],

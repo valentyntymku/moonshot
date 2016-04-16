@@ -61,6 +61,25 @@ This step assumes that you have [Bundler](http://bundler.io/) and a modern versi
 bundle install
 ```
 
+### Create an S3 bucket and update the sample tools.
+
+First, create your own bucket to put your artifacts in:
+```shell
+$ aws s3api create-bucket --bucket moonshot-sample-your-name
+```
+
+Then update `bin/environment` to refer to that bucket in the `S3Bucket` configuration.
+
+### Create a configuration for your stack.
+
+We'll have to copy the base stack configuration and modify the ArtifactBucket
+parameter so that the instance has access to the release bucket (via the
+IAM Role in the CloudFormation stack).
+
+```shell
+$ cp cloud_formation/parameters/moonshot-sample-app.yml cloud_formation/parameters/moonshot-sample-app-dev-$USER.yml
+```
+
 ## Usage of the CLI
 
 Run the following commands to create your environment and deploy code to it.

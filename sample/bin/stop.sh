@@ -1,3 +1,3 @@
 #!/bin/sh
 
-service nginx stop
+service httpd stop
