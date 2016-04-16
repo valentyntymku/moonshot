@@ -1,13 +1,8 @@
 version: 0.0
 os: linux
 files:
-  - source: docroot
-    destination: /usr/share/nginx/docroot
-permissions:
-  - object: /usr/share/nginx
-    pattern: "**"
-    owner: root
-    group: root
+  - source: docroot/
+    destination: /var/www/html
 hooks:
   ApplicationStop:
     - location: bin/aws-codedeploy-samples/load-balancing/elb/deregister_from_elb.sh
