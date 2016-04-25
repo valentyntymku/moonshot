@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'bundler/setup'
 require 'moonshot'
 
 # Set up Moonshot tooling for our environment.
