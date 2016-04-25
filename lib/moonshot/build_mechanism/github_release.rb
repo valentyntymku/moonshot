@@ -71,7 +71,7 @@ module Moonshot::BuildMechanism
       say("Changelog for #{version}", :yellow)
       say("#{@changes}\n\n")
 
-      q = "Do you wan't to tag and release this commit as #{version}? [y/n]"
+      q = "Do you want to tag and release this commit as #{version}? [y/n]"
       raise Thor::Error, 'Release declined.' unless yes?(q)
     end
 

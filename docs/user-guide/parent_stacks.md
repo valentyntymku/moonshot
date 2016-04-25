@@ -1,4 +1,4 @@
-## Parent Stacks
+# Parent Stacks
 
 Moonshot supports referencing another CloudFormation stack as a
 "Parent" during creation time. This relationship is used only for creation,
@@ -7,11 +7,12 @@ stack will be used as parameters, and saved into a local .yml file for future
 use.
 
 The order of precedence for parameters is:
+
 - Existing parameter overrides in the .yml file.
 - The value from the parent stack's output.
 - Any default value in the CloudFormation template.
 
-### A word of caution
+## A word of caution
 
 It's not advisable to use default values in the CloudFormation template.
 Consider the following example:
