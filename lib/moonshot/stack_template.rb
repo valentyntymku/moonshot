@@ -1,3 +1,5 @@
+require 'json'
+
 module Moonshot
   # A StackTemplate loads the JSON template from disk and stores information
   # about it.
@@ -18,7 +20,9 @@ module Moonshot
         raise
       end
 
-      @body = File.read(filename)
+      # The maximum TemplateBody length is 51,200 bytes, so we remove
+      # formatting white space.
+      @body = JSON.parse(File.read(filename)).to_json
     end
 
     def parameters
