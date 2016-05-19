@@ -1,3 +1,6 @@
+require_relative 'default_strategy'
+require_relative 'merge_strategy'
+
 module Moonshot
   # Holds configuration for Moonshot::Controller
   class ControllerConfig
@@ -12,6 +15,7 @@ module Moonshot
     attr_accessor :parent_stacks
     attr_accessor :plugins
     attr_accessor :show_all_stack_events
+    attr_reader :parameter_strategy
 
     def initialize
       @auto_prefix_stack = true
@@ -20,6 +24,18 @@ module Moonshot
       @parent_stacks = []
       @plugins = []
       @show_all_stack_events = false
+    end
+
+    def parameter_strategy=(value)
+      @parameter_strategy =
+        case value.to_sym
+        when :default
+          Moonshot::ParameterStrategy::DefaultStrategy.new
+        when :merge
+          Moonshot::ParameterStrategy::MergeStrategy.new
+        else
+          raise Thor::Error, "Unknown parameter strategy: #{value}"
+        end
     end
   end
 end

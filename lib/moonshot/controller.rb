@@ -86,6 +86,7 @@ module Moonshot
                            ilog: @config.interactive_logger) do |config|
         config.parent_stacks = @config.parent_stacks
         config.show_all_events = @config.show_all_stack_events
+        config.parameter_strategy = @config.parameter_strategy
       end
     end
 

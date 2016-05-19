@@ -260,7 +260,7 @@ module Moonshot
         stack_name: @name,
         template_body: template.body,
         capabilities: ['CAPABILITY_IAM'],
-        parameters: stack_parameter_overrides
+        parameters: @config.parameter_strategy.parameters(parameters, overrides)
       )
       true
     rescue Aws::CloudFormation::Errors::ValidationError => e

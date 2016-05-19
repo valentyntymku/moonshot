@@ -16,6 +16,7 @@ module Moonshot
       attr_accessor :build_mechanism
       attr_accessor :deployment_mechanism
       attr_accessor :default_parent_stack
+      attr_accessor :default_parameter_strategy
       attr_reader :plugins
 
       def plugin(plugin)
@@ -25,6 +26,10 @@ module Moonshot
 
       def parent(value)
         @default_parent_stack = value
+      end
+
+      def parameter_strategy(strategy)
+        @default_parameter_strategy = strategy
       end
 
       def check_class_configuration
@@ -80,6 +85,9 @@ module Moonshot
           elsif self.class.default_parent_stack
             config.parent_stacks << self.class.default_parent_stack
           end
+
+          config.parameter_strategy =
+            options[:parameter_strategy] || self.class.default_parameter_strategy || :default
         end
       rescue => e
         raise Thor::Error, e.message
@@ -106,7 +114,11 @@ module Moonshot
     end
 
     desc :update, 'Update the CloudFormation stack within an environment.'
-    option :show_all_events, desc: 'Show all stack events during update. (Default: errors only)'
+    option :parameter_strategy, desc: 'Override default parameter strategy.'
+    option(
+      :show_all_events,
+      type: :string,
+      desc: 'Show all stack events during update. (Default: errors only)')
     def update
       controller.update
     end
