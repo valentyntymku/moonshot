@@ -1,4 +1,6 @@
 require 'interactive-logger'
+require_relative 'default_strategy'
+require_relative 'merge_strategy'
 
 # Base class for Moonshot-powered project tooling.
 module Moonshot
@@ -86,11 +88,23 @@ module Moonshot
             config.parent_stacks << self.class.default_parent_stack
           end
 
-          config.parameter_strategy =
-            options[:parameter_strategy] || self.class.default_parameter_strategy || :default
+          parameter_strategy = options[:parameter_strategy] || self.class.default_parameter_strategy
+          config.parameter_strategy = parameter_strategy_factory(parameter_strategy) \
+            unless parameter_strategy.nil?
         end
       rescue => e
         raise Thor::Error, e.message
+      end
+
+      def parameter_strategy_factory(value)
+        case value.to_sym
+        when :default
+          Moonshot::ParameterStrategy::DefaultStrategy.new
+        when :merge
+          Moonshot::ParameterStrategy::MergeStrategy.new
+        else
+          raise Thor::Error, "Unknown parameter strategy: #{value}"
+        end
       end
     end
 
