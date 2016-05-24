@@ -128,10 +128,13 @@ module Moonshot
     end
 
     desc :update, 'Update the CloudFormation stack within an environment.'
-    option :parameter_strategy, desc: 'Override default parameter strategy.'
+    option(
+      :parameter_strategy,
+      type: :string,
+      desc: 'Override default parameter strategy.')
     option(
       :show_all_events,
-      type: :string,
+      type: :boolean,
       desc: 'Show all stack events during update. (Default: errors only)')
     def update
       controller.update
