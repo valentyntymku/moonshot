@@ -12,8 +12,9 @@ class Moonshot::ArtifactRepository::S3Bucket
 
   attr_reader :bucket_name
 
-  def initialize(bucket_name)
+  def initialize(bucket_name, prefix: '')
     @bucket_name = bucket_name
+    @prefix = prefix
   end
 
   def store_hook(build_mechanism, version_name)
@@ -32,7 +33,7 @@ class Moonshot::ArtifactRepository::S3Bucket
   end
 
   def filename_for_version(version_name)
-    "#{version_name}.tar.gz"
+    "#{@prefix}#{version_name}.tar.gz"
   end
 
   private
