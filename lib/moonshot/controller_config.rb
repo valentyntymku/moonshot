@@ -1,3 +1,5 @@
+require_relative 'default_strategy'
+
 module Moonshot
   # Holds configuration for Moonshot::Controller
   class ControllerConfig
@@ -12,6 +14,7 @@ module Moonshot
     attr_accessor :parent_stacks
     attr_accessor :plugins
     attr_accessor :show_all_stack_events
+    attr_accessor :parameter_strategy
 
     def initialize
       @auto_prefix_stack = true
@@ -20,6 +23,7 @@ module Moonshot
       @parent_stacks = []
       @plugins = []
       @show_all_stack_events = false
+      @parameter_strategy = Moonshot::ParameterStrategy::DefaultStrategy.new
     end
   end
 end

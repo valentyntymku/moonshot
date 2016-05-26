@@ -1,4 +1,6 @@
 require 'interactive-logger'
+require_relative 'default_strategy'
+require_relative 'merge_strategy'
 
 # Base class for Moonshot-powered project tooling.
 module Moonshot
@@ -16,6 +18,7 @@ module Moonshot
       attr_accessor :build_mechanism
       attr_accessor :deployment_mechanism
       attr_accessor :default_parent_stack
+      attr_accessor :default_parameter_strategy
       attr_reader :plugins
 
       def plugin(plugin)
@@ -25,6 +28,10 @@ module Moonshot
 
       def parent(value)
         @default_parent_stack = value
+      end
+
+      def parameter_strategy(strategy)
+        @default_parameter_strategy = strategy
       end
 
       def check_class_configuration
@@ -80,9 +87,24 @@ module Moonshot
           elsif self.class.default_parent_stack
             config.parent_stacks << self.class.default_parent_stack
           end
+
+          parameter_strategy = options[:parameter_strategy] || self.class.default_parameter_strategy
+          config.parameter_strategy = parameter_strategy_factory(parameter_strategy) \
+            unless parameter_strategy.nil?
         end
       rescue => e
         raise Thor::Error, e.message
+      end
+
+      def parameter_strategy_factory(value)
+        case value.to_sym
+        when :default
+          Moonshot::ParameterStrategy::DefaultStrategy.new
+        when :merge
+          Moonshot::ParameterStrategy::MergeStrategy.new
+        else
+          raise Thor::Error, "Unknown parameter strategy: #{value}"
+        end
       end
     end
 
@@ -106,7 +128,14 @@ module Moonshot
     end
 
     desc :update, 'Update the CloudFormation stack within an environment.'
-    option :show_all_events, desc: 'Show all stack events during update. (Default: errors only)'
+    option(
+      :parameter_strategy,
+      type: :string,
+      desc: 'Override default parameter strategy.')
+    option(
+      :show_all_events,
+      type: :boolean,
+      desc: 'Show all stack events during update. (Default: errors only)')
     def update
       controller.update
     end
