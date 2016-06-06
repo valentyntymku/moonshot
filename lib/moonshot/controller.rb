@@ -32,9 +32,10 @@ module Moonshot
     end
 
     def status
-      run_plugins(:status)
+      run_plugins(:pre_status)
       run_hook(:deploy, :status)
       stack.status
+      run_plugins(:post_status)
     end
 
     def deploy_code
