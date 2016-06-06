@@ -30,7 +30,7 @@ per-environment tunings in the source repository acting as both a safety net
 and documentation of existing environments. A possible solution for using this
 strategy in a safe manner is the following:
 
-When a stack update is performed, a *parameter overrides file* is checked in
+When a stack update is performed, a *parameter file* is checked in
 `cloud_formation/parameters/environment-name.yml`. This file is YAML formatted
 and takes a hash of stack parameter names and values, for example:
 ```yaml
@@ -78,8 +78,8 @@ Example:
 
 ```ruby
 class CustomStrategy
-  def parameters(current, overrides)
-    current.map do |k, v|
+  def parameters(parameters, stack_parameters, template)
+    parameters.map do |k, v|
       {
         parameter_key: k,
         parameter_value: v,

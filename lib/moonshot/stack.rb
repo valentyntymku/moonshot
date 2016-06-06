@@ -138,7 +138,7 @@ module Moonshot
     # update.
     def overrides
       if File.exist?(parameters_file)
-        YAML.load_file(parameters_file)
+        YAML.load_file(parameters_file) || {}
       else
         {}
       end
@@ -260,7 +260,11 @@ module Moonshot
         stack_name: @name,
         template_body: template.body,
         capabilities: ['CAPABILITY_IAM'],
-        parameters: @config.parameter_strategy.parameters(parameters, overrides)
+        parameters: @config.parameter_strategy.parameters(
+          overrides,
+          parameters,
+          template
+        )
       )
       true
     rescue Aws::CloudFormation::Errors::ValidationError => e
