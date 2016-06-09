@@ -121,10 +121,19 @@ module Moonshot
       desc: "Parent stack to import parameters from. (Default: #{default_parent_stack || 'None'})")
     option :deploy, default: true, type: :boolean, aliases: '-d',
                     desc: 'Choose if code should be deployed after stack is created'
+    option :version, default: nil, type: :string,
+                     desc: 'Version to deploy. Only valid if deploy flag is set.'
     option :show_all_events, desc: 'Show all stack events during update. (Default: errors only)'
     def create
       controller.create
-      controller.deploy_code if options[:deploy]
+
+      if options[:deploy]
+        if options[:version].nil?
+          controller.deploy_code
+        else
+          controller.deploy_version(options[:version])
+        end
+      end
     end
 
     desc :update, 'Update the CloudFormation stack within an environment.'
