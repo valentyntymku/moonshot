@@ -10,6 +10,8 @@ module Moonshot
   end
   module DeploymentMechanism # rubocop:disable Documentation
   end
+  module Plugins # rubocop:disable Documentation
+  end
 end
 
 [
@@ -39,3 +41,8 @@ end
   'build_mechanism/version_proxy',
   'deployment_mechanism/code_deploy'
 ].each { |f| require_relative "moonshot/#{f}" }
+
+# Bundled plugins
+[
+  'backup'
+].each { |p| require_relative "plugins/#{p}" }
