@@ -17,6 +17,9 @@ Gem::Specification.new do |s|
   s.add_dependency('interactive-logger', '~> 0.1.1')
   s.add_dependency('rotp', '~> 2.1.1')
   s.add_dependency('ruby-duration', '~> 3.2.3')
+  # Pin back activesupport (ruby-duration dependency) until we only support
+  # Ruby >= 2.2.2.
+  s.add_dependency('activesupport', '< 5.0.0')
   s.add_dependency('thor', '~> 0.19.1')
   s.add_dependency('semantic')
   s.add_dependency('vandamme')
