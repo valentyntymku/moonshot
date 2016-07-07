@@ -8,6 +8,8 @@ module Moonshot::BuildMechanism
     include Moonshot::DoctorHelper
     include Moonshot::Shell
 
+    MAX_BUILD_FIND_ATTEMPTS = 10
+
     attr_reader :output_file
 
     def initialize(slug, pro: false)
@@ -33,13 +35,46 @@ module Moonshot::BuildMechanism
     def find_build_and_job(version)
       job_number = nil
       ilog.start_threaded('Find Travis CI build') do |step|
-        sleep 2
-        build_out = sh_out("bundle exec travis show #{@cli_args} #{version}")
-        unless (job_number = build_out.match(/^#(\d+\.\d+) .+BUILD=1.+/)[1])
-          raise "Build for #{version} not found.\n#{build_out}"
-        end
+        job_number = wait_for_build(version)
+
         step.success("Travis CI ##{job_number.gsub(/\..*/, '')} running.")
       end
+      job_number
+    end
+
+    # Looks for the travis build and attempts to retry if the build does not
+    # exist yet.
+    #
+    # @param verison [String] Build version to look for.
+    #
+    # @return [String] Job number for the travis build.
+    def wait_for_build(version)
+      job_number = nil
+      attempts = 0
+      loop do
+        # Give travis some time to start the build.
+        attempts += 1
+        sleep 10
+
+        # Attempt to find the build. Rescue and re-attempt if the build can not
+        # be found on travis yet.
+        begin
+          build_out = sh_out("bundle exec travis show #{@cli_args} #{version}")
+        rescue RuntimeError => e
+          next unless attempts >= MAX_BUILD_FIND_ATTEMPTS
+          raise e
+        end
+
+        unless (job_number = build_out.match(/^#(\d+\.\d+) .+BUILD=1.+/)[1])
+          next unless attempts >= MAX_BUILD_FIND_ATTEMPTS
+          raise "Build for #{version} not found.\n#{build_out}"
+        end
+
+        # If we've reached this point then everything went smoothly and we can
+        # exit the loop.
+        break
+      end
+
       job_number
     end
 
