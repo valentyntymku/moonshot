@@ -1,5 +1,6 @@
-module Moonshot
+module Moonshot # rubocop:disable ModuleLength
   describe BuildMechanism::GithubRelease do
+    let(:tag) { '0.0.0-rspec' }
     let(:build_mechanism) do
       instance_double(BuildMechanism::Script).as_null_object
     end
@@ -70,6 +71,53 @@ module Moonshot
             .with("`hub` failed, install hub and authorize it.\noops")
           subject.send(:doctor_check_hub_auth)
         end
+      end
+    end
+
+    describe '#git_tag_exists' do
+      let(:sha) { '1397919abb5b7c0908ab42eaac501d68a0ccb6db' }
+
+      it 'passes if the tag exists at the same sha' do
+        expect(subject).to receive(:sh_step).with("git tag -l #{tag}")
+          .and_yield(nil, tag)
+        expect(subject).to receive(:sh_step).with("git rev-list -n 1 #{tag}")
+          .and_yield(nil, sha)
+
+        expect(subject.send(:git_tag_exists, tag, sha)).to eq(true)
+      end
+
+      it 'fails if the tag does not exist' do
+        expect(subject).to receive(:sh_step).with("git tag -l #{tag}")
+          .and_yield(nil, '')
+        expect(subject).to_not receive(:sh_step)
+          .with("git rev-list -n 1 #{tag}")
+
+        expect(subject.send(:git_tag_exists, tag, sha)).to eq(false)
+      end
+
+      it 'errors if the tag exists at a different sha' do
+        expect(subject).to receive(:sh_step).with("git tag -l #{tag}")
+          .and_yield(nil, tag)
+        expect(subject).to receive(:sh_step).with("git rev-list -n 1 #{tag}")
+          .and_yield(nil, '72774c1855c044e917f322e9536a4e3f62697267')
+
+        expect { subject.send(:git_tag_exists, tag, sha) }.to \
+          raise_error(RuntimeError)
+      end
+    end
+
+    describe '#hub_release_exists' do
+      it 'passes if the github release exists' do
+        expect(subject).to receive(:sh_step).with("hub release show #{tag}")
+
+        expect(subject.send(:hub_release_exists, tag)).to eq(true)
+      end
+
+      it 'fails if the github release does not exist' do
+        expect(subject).to receive(:sh_step).with("hub release show #{tag}")
+          .and_raise
+
+        expect(subject.send(:hub_release_exists, tag)).to eq(false)
       end
     end
   end
