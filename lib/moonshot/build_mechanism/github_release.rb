@@ -76,8 +76,38 @@ module Moonshot::BuildMechanism
     end
 
     def git_tag(tag, sha, annotation)
+      return if git_tag_exists(tag, sha)
+
       cmd = "git tag -a #{tag} #{sha} --file=-"
       sh_step(cmd, stdin: annotation)
+    end
+
+    # Determines if a valid git tag already exists.
+    #
+    # @param tag [String] Tag to check existence for.
+    # @param sha [String] SHA to verify the tag against.
+    #
+    # @return [Boolean] Whether or not the tag exists.
+    #
+    # @raise [RuntimeError] if the SHAs do not match.
+    def git_tag_exists(tag, sha)
+      exists = false
+      sh_step("git tag -l #{tag}") do |_, output|
+        exists = (output.strip == tag)
+      end
+
+      # If the tag does exist, make sure the existing SHA matches the SHA we're
+      # trying to build from.
+      if exists
+        sh_step("git rev-list -n 1 #{tag}") do |_, output|
+          raise "#{tag} already exists at a different SHA" \
+            if output.strip != sha
+        end
+
+        log.info("tag #{tag} already exists")
+      end
+
+      exists
     end
 
     def git_push_tag(remote, tag)
@@ -88,11 +118,26 @@ module Moonshot::BuildMechanism
     end
 
     def hub_create_release(semver, commitish, changelog_entry)
+      return if hub_release_exists(semver, commitish)
+
       message = "#{semver}\n\n#{changelog_entry}"
       cmd = "hub release create #{semver} --commitish=#{commitish}"
       cmd << ' --prerelease' if semver.pre || semver.build
       cmd << " --message=#{Shellwords.escape(message)}"
       sh_step(cmd)
+    end
+
+    # Determines if a github release already exists.
+    #
+    # @param semver [String] Semantic version string for the release.
+    #
+    # @return [Boolean]
+    def hub_release_exists(semver)
+      sh_step("hub release show #{semver}")
+      log.info("release #{semver} already exists")
+      true
+    rescue RuntimeError
+      false
     end
 
     def validate_commit
