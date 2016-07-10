@@ -47,6 +47,24 @@ module Moonshot
         base.include(Moonshot::BuildMechanism)
         base.include(Moonshot::DeploymentMechanism)
       end
+
+      def ssh_options!
+        option :user, default: ENV['MOONSHOT_SSH_USER'] || ENV['USER'], type: :string,
+                      aliases: '-l',
+                      desc: 'Specifies the user to log in as on the remote machine.'
+        option :identity_file, default: ENV['MOONSHOT_SSH_KEY_FILE'], type: :string,
+                               aliases: '-i',
+                               desc: 'Selects a file from which the identity (private key) for '\
+                                     'public key authentication is read.'
+        option :instance, default: nil, type: :string, aliases: '-s',
+                          desc: 'Connect to specified instance ID instead of the first one.'
+        option :command, default: nil, type: :string, aliases: '-c',
+                         desc: 'Execute the specified command instead of opening a shell.'
+        option :auto_scaling_group, default: nil, type: :string, aliases: '-g',
+                                    desc: 'The logical ID of the auto scaling group to SSH into. '\
+                                    'Mandatory if the stack has multiple ASGs, '\
+                                    'ignored if you have only one.'
+      end
     end
 
     def initialize(*args)
@@ -91,6 +109,12 @@ module Moonshot
           parameter_strategy = options[:parameter_strategy] || self.class.default_parameter_strategy
           config.parameter_strategy = parameter_strategy_factory(parameter_strategy) \
             unless parameter_strategy.nil?
+
+          config.ssh_user = options[:user]
+          config.ssh_identity_file = options[:identity_file]
+          config.ssh_instance = options[:instance]
+          config.ssh_command = options[:command]
+          config.ssh_auto_scaling_group_name = options[:auto_scaling_group]
         end
       rescue => e
         raise Thor::Error, e.message
@@ -105,6 +129,12 @@ module Moonshot
         else
           raise Thor::Error, "Unknown parameter strategy: #{value}"
         end
+      end
+
+      def ssh_command(command)
+        arguments = ARGV.drop(1)
+        arguments += ['--command', command]
+        invoke :ssh, [], arguments
       end
     end
 
@@ -179,6 +209,12 @@ module Moonshot
     def doctor
       success = controller.doctor
       raise Thor::Error, 'One or more checks failed.' unless success
+    end
+
+    desc :ssh, 'SSH into the first or specified instance on the stack.'
+    ssh_options!
+    def ssh
+      controller.ssh
     end
   end
 end

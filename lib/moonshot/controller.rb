@@ -80,6 +80,12 @@ module Moonshot
       success
     end
 
+    def ssh
+      run_plugins(:pre_ssh)
+      stack.ssh
+      run_plugins(:post_ssh)
+    end
+
     def stack
       @stack ||= Stack.new(stack_name,
                            app_name: @config.app_name,
@@ -88,6 +94,11 @@ module Moonshot
         config.parent_stacks = @config.parent_stacks
         config.show_all_events = @config.show_all_stack_events
         config.parameter_strategy = @config.parameter_strategy
+        config.ssh_user = @config.ssh_user
+        config.ssh_identity_file = @config.ssh_identity_file
+        config.ssh_instance = @config.ssh_instance
+        config.ssh_command = @config.ssh_command
+        config.ssh_auto_scaling_group_name = @config.ssh_auto_scaling_group_name
       end
     end
 

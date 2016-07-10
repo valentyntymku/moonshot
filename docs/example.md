@@ -135,3 +135,9 @@ Tear down your stack by running the following command:
 ```shell
 bundle exec bin/environment delete
 ```
+
+SSH into the first instance in your stack by running the following command:
+
+```shell
+bundle exec bin/environment ssh
+```

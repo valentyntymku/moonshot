@@ -22,6 +22,8 @@ methods:
 - post_status
 - pre_doctor
 - post_doctor
+- pre_ssh
+- post_ssh
 
 The method will be handed a single argument, which is an instance of the
 `Moonshot::Resources` class. This instance gives the plugin access to three
