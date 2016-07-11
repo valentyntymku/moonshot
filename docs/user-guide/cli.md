@@ -285,3 +285,32 @@ CodeDeploy
   ✓ CodeDeployRole exists.
   ✓ Resource 'AutoScalingGroup' exists in the CloudFormation template.
 ```
+
+## SSH
+
+SSH into the first or specified instance on the stack.
+
+|Description|Long Form|Short Form|Type|Example|Default|
+|---|---|---|---|---|---|
+|SSH user name|user|l|string|someuser|Environment variable: MOONSHOT_SSH_USER or USER|
+|Private key file for SSH|identity-file|i|string|~/.ssh/whatever|Environment variable: MOONSHOT_SSH_KEY_FILE|
+|Instance ID|instance|s|string|i-04683a82f2dddcc04|(first)|
+|Command to execute|command|c|string|uname -a|open a shell|
+|Auto Scaling Group|auto-scaling-group|g|string|ExampleAppAsg||
+|Environment Name|name|n|string|moonshot-sample-app|None|
+|Interactive Logger|interactive_logger||boolean||true|
+|Verbose|verbose|v|boolean||false|
+
+Example:
+
+```shell
+./bin/environment ssh --name my-service-staging -i ~/.ssh/whatever -c "cat /etc/redhat-release"
+```
+
+Output:
+
+```shell
+Opening SSH connection to i-04683a82f2dddcc04 (123.123.123.123)...
+CentOS Linux release 7.2.1511 (Core)
+Connection to 123.123.123.123 closed.
+```
