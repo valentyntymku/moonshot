@@ -118,7 +118,7 @@ module Moonshot::BuildMechanism
     end
 
     def hub_create_release(semver, commitish, changelog_entry)
-      return if hub_release_exists(semver, commitish)
+      return if hub_release_exists(semver)
 
       message = "#{semver}\n\n#{changelog_entry}"
       cmd = "hub release create #{semver} --commitish=#{commitish}"
