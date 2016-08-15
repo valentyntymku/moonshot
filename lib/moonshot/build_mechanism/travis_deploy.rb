@@ -1,4 +1,7 @@
 require 'moonshot/shell'
+require 'travis'
+require 'travis/pro'
+require 'travis/client/auto_login'
 
 module Moonshot::BuildMechanism
   # This simply waits for Travis-CI to finish building a job matching the
@@ -12,9 +15,13 @@ module Moonshot::BuildMechanism
 
     attr_reader :output_file
 
-    def initialize(slug, pro: false)
+    def initialize(slug, pro: false, timeout: 900)
       @slug = slug
+      @pro = pro
+      @timeout = timeout
+
       @endpoint = pro ? '--pro' : '--org'
+      @travis_base = @pro ? Travis::Pro : Travis
       @cli_args = "-r #{@slug} #{@endpoint}"
     end
 
@@ -31,6 +38,18 @@ module Moonshot::BuildMechanism
     end
 
     private
+
+    # Authenticates with the proper travis service.
+    def authenticate
+      Travis::Client::AutoLogin.new(@travis_base).authenticate
+    end
+
+    # Retrieves the travis repository.
+    #
+    # @return [Travis::Client::Repository]
+    def repo
+      @repo ||= @travis_base::Repository.find(@slug)
+    end
 
     def find_build_and_job(version)
       job_number = nil
@@ -78,16 +97,35 @@ module Moonshot::BuildMechanism
       job_number
     end
 
+    # Waits for a job to complete, within the defined timeout.
+    #
+    # @param job_number [String] The job number to wait for.
     def wait_for_job(job_number)
-      cmd = "bundle exec travis logs #{@cli_args} #{job_number}"
-      # This log tailing fails at the end of the file. travis bug.
-      sh_step(cmd, fail: false)
+      authenticate
+
+      # Wait for the job to complete or hit the timeout.
+      start = Time.new
+      job = repo.job(job_number)
+      ilog.start_threaded("Waiting for job #{job_number} to complete.") do |s|
+        while !job.finished? && Time.new - start < @timeout
+          s.continue("Job status: #{job.state}")
+          sleep 10
+          job.reload
+        end
+
+        if job.finished?
+          s.success
+        else
+          s.failure("Job #{job_number} did not complete within time limit of " \
+            "#{@timeout} seconds")
+        end
+      end
     end
 
     def check_build(version)
       cmd = "bundle exec travis show #{@cli_args} #{version}"
       sh_step(cmd) do |step, out|
-        raise "Build didn't pass.\n#{build_out}" \
+        raise "Build didn't pass.\n#{out}" \
           if out =~ /^#(\d+\.\d+) (?!passed).+BUILD=1.+/
 
         step.success("Travis CI build for #{version} passed.")
