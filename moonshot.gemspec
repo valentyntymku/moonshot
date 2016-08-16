@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency('activesupport', '< 5.0.0')
   s.add_dependency('thor', '~> 0.19.1')
   s.add_dependency('semantic')
+  s.add_dependency('travis')
   s.add_dependency('vandamme')
 
   s.add_development_dependency('rspec')

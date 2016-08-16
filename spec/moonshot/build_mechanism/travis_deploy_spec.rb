@@ -1,4 +1,4 @@
-module Moonshot
+module Moonshot # rubocop:disable Metrics/ModuleLength
   describe BuildMechanism::TravisDeploy do
     let(:resources) do
       Resources.new(
@@ -83,6 +83,53 @@ module Moonshot
         expect(subject).to receive(:sh_out).and_return(output)
 
         expect(subject.send(:wait_for_build, tag)).to eq(job_number)
+      end
+    end
+
+    describe '#wait_for_job' do
+      let(:job_number) { '1401.3' }
+      let(:repo) do
+        instance_double(Travis::Client::Repository)
+      end
+      let(:step) do
+        instance_double(InteractiveLogger::Step)
+      end
+      let(:job) do
+        instance_double(
+          Travis::Client::Job,
+          state: 'received',
+          finished?: false,
+          reload: nil
+        )
+      end
+
+      before(:each) do
+        allow(subject).to receive(:authenticate)
+        allow(subject).to receive(:repo).and_return(repo)
+        allow(repo).to receive(:job).with(job_number).and_return(job)
+      end
+
+      it 'should continue until the job is complete' do
+        expect(job).to receive(:state).and_return('started').exactly(3).times
+        expect(job).to receive(:finished?).and_return(false).exactly(3).times
+        expect(job).to receive(:finished?).and_return(true).twice
+        expect(subject).to receive(:sleep).with(10).exactly(3).times
+
+        expect(resources.ilog).to receive(:start_threaded).and_yield(step)
+        expect(step).to receive(:continue).with('Job status: started')
+          .exactly(3).times
+        expect(step).to receive(:success)
+
+        subject.send(:wait_for_job, job_number)
+      end
+
+      it 'should fail if the job does not complete within the time limit' do
+        expect(resources.ilog).to receive(:start_threaded).and_yield(step)
+        expect(step).to receive(:continue)
+        expect(step).to receive(:failure)
+
+        subject.instance_variable_set(:@timeout, 5)
+        subject.send(:wait_for_job, job_number)
       end
     end
   end
