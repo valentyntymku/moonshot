@@ -1,5 +1,6 @@
 require 'moonshot/artifact_repository/s3_bucket'
 require 'moonshot/shell'
+require 'digest'
 require 'securerandom'
 require 'semantic'
 require 'tmpdir'
@@ -7,7 +8,7 @@ require 'tmpdir'
 module Moonshot::ArtifactRepository
   # S3 Bucket repository backed by GitHub releases.
   # If a SemVer package isn't found in S3, it is copied from GitHub releases.
-  class S3BucketViaGithubReleases < S3Bucket
+  class S3BucketViaGithubReleases < S3Bucket # rubocop:disable ClassLength
     include Moonshot::BuildMechanism
     include Moonshot::Shell
 
@@ -57,6 +58,12 @@ module Moonshot::ArtifactRepository
     def attach_release_asset(version, file)
       # -m '' leaves message unchanged.
       cmd = "hub release edit #{version} -m '' --attach=#{file}"
+
+      # If there is a checksum file, attach it as well. We only support MD5
+      # since that's what S3 uses.
+      checksum_file = File.basename(file, '.tar.gz') + '.md5'
+      cmd += " --attach=#{checksum_file}" if File.exist?(checksum_file)
+
       sh_step(cmd)
     end
 
@@ -70,11 +77,141 @@ module Moonshot::ArtifactRepository
     def github_to_s3(version, s3_name)
       Dir.mktmpdir('github_to_s3', Dir.getwd) do |tmpdir|
         Dir.chdir(tmpdir) do
-          sh_out("hub release download #{version}")
-          file = Dir.glob("*#{version}*.tar.gz").fetch(0)
+          file = download_from_github(version)
           upload_to_s3(file, s3_name)
         end
       end
+    end
+
+    # Uploads the file to s3 and verifies the checksum.
+    #
+    # @param file [String] File to be uploaded to s3.
+    # @param key [String] Name of the object to be created on s3.
+    # @raise [RuntimeError] If the file fails to upload correctly after 3
+    #                       attempts.
+    def upload_to_s3(file, key)
+      attempts = 0
+      begin
+        super
+
+        unless (checksum = checksum_file(file)).nil?
+          verify_s3_checksum(key, checksum, attempt: attempts)
+        end
+      rescue RuntimeError => e
+        unless (attempts += 1) > 3
+          # Wait 10 seconds before trying again.
+          sleep 10
+          retry
+        end
+
+        raise e
+      end
+    end
+
+    # Downloads the release build from github and verifies the checksum.
+    #
+    # @param version [String] Version to be downloaded
+    # @param [String] Build file downloaded.
+    # @raise [RuntimeError] If the file fails to download correctly after 3
+    #                       attempts.
+    def download_from_github(version)
+      attempts = 0
+      begin
+        # Make sure the directory is empty before downloading the release.
+        FileUtils.rm(Dir.glob('*'))
+
+        # Download the release and find the actual build file.
+        sh_out("hub release download #{version}")
+        file = Dir.glob("*#{version}*.tar.gz").fetch(0)
+
+        unless (checksum = checksum_file(file)).nil?
+          verify_download_checksum(file, checksum, attempt: attempts)
+        end
+      rescue RuntimeError => e
+        attempts += 1
+        retry unless attempts > 3
+        raise e
+      end
+
+      file
+    end
+
+    # Find the checksum file for a release, if there is one.
+    #
+    # @param build_file [String] Build file to get the checksum for.
+    # @return [String] Checksum file or nil.
+    def checksum_file(build_file)
+      basename = File.basename(build_file, '.tar.gz')
+      Dir.glob("#{basename}.md5").fetch(0, nil)
+    end
+
+    # Verifies the checksum for a file downloaded from github.
+    #
+    # @param build_file [String] Build file to verify.
+    # @param checksum_file [String] Checksum file to verify the build.
+    # @param attempt [Integer] The attempt for this verification.
+    def verify_download_checksum(build_file, checksum_file, attempt: 0)
+      expected = File.read(checksum_file)
+      actual = Digest::MD5.file(build_file).hexdigest
+      if actual != expected
+        log.error("GitHub fie #{build_file} checksum should be #{expected} " \
+                  "but was #{actual}.")
+        backup_failed_github_file(build_file, attempt)
+        raise "Checksum for #{build_file} could not be verified."
+      end
+
+      log.info('Verified downloaded file checksum.')
+    end
+
+    # Backs up the failed file from a github verification.
+    #
+    # @param build_file [String] The build file to backup.
+    # @param attempt [Integer] Which attempt to verify the file failed.
+    def backup_failed_github_file(build_file, attempt)
+      basename = File.basename(build_file, '.tar.gz')
+      destination = File.join(Dir.tmpdir, basename,
+                              ".gh.failure.#{attempt}.tar.gz")
+      FileUtils.cp(build_file, destination)
+      log.info("Copied #{build_file} to #{destination}")
+    end
+
+    # Verifies the checksum for a file uploaded to s3.
+    #
+    # Uses a HEAD request and uses the etag, which is an MD5 hash.
+    #
+    # @param s3_name [String] The object's name on s3.
+    # @param checksum_file [String] Checksum file to verify the build.
+    # @param attempt [Integer] The attempt for this verification.
+    def verify_s3_checksum(s3_name, checksum_file, attempt: 0)
+      headers = s3_client.head_object(
+        key: s3_name,
+        bucket: @bucket_name
+      )
+      expected = File.read(checksum_file)
+      actual = headers.etag.tr('"', '')
+      if actual != expected
+        log.error("S3 file #{s3_name} checksum should be #{expected} but " \
+                  "was #{actual}.")
+        backup_failed_s3_file(s3_name, attempt)
+        raise "Checksum for #{s3_name} could not be verified."
+      end
+
+      log.info('Verified uploaded file checksum.')
+    end
+
+    # Backs up the failed file from an s3 verification.
+    #
+    # @param s3_name [String] The object's name on s3.
+    # @param attempt [Integer] Which attempt to verify the file failed.
+    def backup_failed_s3_file(s3_name, attempt)
+      basename = File.basename(s3_name, '.tar.gz')
+      destination = "#{Dir.tmpdir}/#{basename}.s3.failure.#{attempt}.tar.gz"
+      s3_client.get_object(
+        response_target: destination,
+        key: s3_name,
+        bucket: @bucket_name
+      )
+      log.info("Copied #{s3_name} to #{destination}")
     end
 
     def doctor_check_hub_release_download
