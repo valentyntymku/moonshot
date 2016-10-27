@@ -13,6 +13,9 @@ module Moonshot
     end
 
     def run! # rubocop:disable AbcSize, CyclomaticComplexity, MethodLength, PerceivedComplexity
+      # Commands defined as Moonshot::Commands require a properly
+      # configured Moonshot.rb and supporting files. Without them, we only
+      # support `--help` and `new`.
       return if handle_early_commands
 
       # Find the Moonfile in this project.
@@ -20,7 +23,12 @@ module Moonshot
 
       loop do
         break if File.exist?('Moonfile.rb')
-        raise 'Could not find Moonfile.rb!' if Dir.pwd == '/'
+
+        if Dir.pwd == '/'
+          warn 'No Moonfile.rb found, are you in a project? Maybe you need to '\
+	        			'create one with `moonshot new <app_name>`?'
+          raise 'No Moonfile found'
+        end
 
         Dir.chdir('..')
       end
@@ -128,6 +136,11 @@ module Moonshot
       if ARGV[0] == 'help'
         ARGV.delete_at(0)
         ARGV.push('-h')
+      elsif ARGV[0] == 'new'
+        require_relative 'commands/new'
+        app_name = ARGV[1]
+        ::Moonshot::Commands::New.run!(app_name)
+        return true
       end
 
       # Proceed to processing commands normally.
