@@ -8,21 +8,21 @@ module Moonshot
       self.usage = 'update [options]'
       self.description = 'Update the CloudFormation stack within an environment.'
 
-      def execute
-        controller.update
+      def parser
+        parser = super
+
+        parser.on('--dry-run', TrueClass, 'Show the changes that would be applied, but do not execute them') do |v|
+          @dry_run = v
+        end
+
+        parser.on('--force', '-f', TrueClass, 'Apply ChangeSet without confirmation') do |v|
+          @force = v
+        end
       end
 
-      private
-
-      def parameter_strategy_factory(value)
-        case value.to_sym
-        when :default
-          Moonshot::ParameterStrategy::DefaultStrategy.new
-        when :merge
-          Moonshot::ParameterStrategy::MergeStrategy.new
-        else
-          raise "Unknown parameter strategy: #{value}"
-        end
+      def execute
+        @force = true if !Moonshot.config.interactive
+        controller.update(dry_run: @dry_run, force: @force)
       end
     end
   end

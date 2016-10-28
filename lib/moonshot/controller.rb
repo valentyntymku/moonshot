@@ -71,7 +71,7 @@ module Moonshot
       end
     end
 
-    def update # rubocop:disable AbcSize
+    def update(dry_run:, force:) # rubocop:disable AbcSize
       # Scan the template for all required parameters and configure
       # the ParameterCollection.
       @config.parameters = ParameterCollection.from_template(stack.template)
@@ -119,7 +119,7 @@ module Moonshot
       end
 
       run_hook(:deploy, :pre_update)
-      stack.update
+      stack.update(dry_run: dry_run, force: force)
       run_hook(:deploy, :post_update)
       run_plugins(:post_update)
     end
