@@ -1,7 +1,6 @@
 # Global Options
 
 ## `--[no-]interactive-logger`
-## List
 
 *Default: Enabled*
 
