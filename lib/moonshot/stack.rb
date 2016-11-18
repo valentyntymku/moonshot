@@ -239,8 +239,7 @@ module Moonshot
         stack_name: @name,
         template_body: template.body,
         capabilities: ['CAPABILITY_IAM'],
-        parameters: @config.parameters.values.map(&:to_cf),
-        tags: make_tags
+        parameters: @config.parameters.values.map(&:to_cf)
       )
       true
     rescue Aws::CloudFormation::Errors::ValidationError => e
