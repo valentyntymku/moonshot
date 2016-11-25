@@ -37,6 +37,15 @@ make use of this option.
 
 # Core Commands
 
+## `moonshot new`
+
+Creates a new Moonshot application with the necessary directory structure and sample files.
+
+Example:
+```shell
+moonshot new my_application
+```
+
 ## `moonshot list`
 
 List stacks for this application. At this time, there are no

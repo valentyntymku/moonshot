@@ -8,6 +8,7 @@ module Moonshot
       @app_name = app_name
     end
 
+    # rubocop:disable Metrics/AbcSize
     def list
       result = []
       next_token = nil
@@ -16,10 +17,15 @@ module Moonshot
         resp.stacks.each do |stack|
           app_tag = stack.tags.find { |t| t.key == 'moonshot_application' }
           env_tag = stack.tags.find { |t| t.key == 'moonshot_environment' }
+          legacy_tag = stack.tags.find { |t| t.key == 'ah_stage' }
 
-          next unless app_tag && app_tag.value == Moonshot.config.app_name
-          result <<
-            EnvironmentDescription.new(env_tag.value, stack.creation_time, stack.stack_status)
+          if app_tag && app_tag.value == Moonshot.config.app_name
+            result <<
+              EnvironmentDescription.new(env_tag.value, stack.creation_time, stack.stack_status)
+          elsif legacy_tag && legacy_tag.value.start_with?(Moonshot.config.app_name)
+            result <<
+              EnvironmentDescription.new(legacy_tag.value, stack.creation_time, stack.stack_status)
+          end
         end
         break unless resp.next_token
         next_token = resp.next_token
