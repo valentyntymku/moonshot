@@ -12,20 +12,16 @@ module Moonshot
 
     def confirm?
       unless Moonshot.config.interactive
-        raise "Cannot confirm ChangeSet when interactive mode is disabled!"
+        raise 'Cannot confirm ChangeSet when interactive mode is disabled!'
       end
 
       loop do
-        print "Apply changes? "
+        print 'Apply changes? '
         resp = gets.chomp.downcase
 
-        if resp == 'yes'
-          return true
-        elsif resp == 'no'
-          return false
-        else
-          puts "Please enter 'yes' or 'no'!"
-        end
+        return true if resp == 'yes'
+        return false if resp == 'no'
+        puts "Please enter 'yes' or 'no'!"
       end
     end
 
@@ -44,9 +40,9 @@ module Moonshot
         puts "* #{c.action} #{c.logical_resource_id} (#{c.resource_type})"
 
         if c.replacement == 'True'
-          puts " - Will be replaced"
+          puts ' - Will be replaced'
         elsif c.replacement == 'Conditional'
-          puts " - May be replaced (Conditional)"
+          puts ' - May be replaced (Conditional)'
         end
 
         c.details.each do |d|
@@ -94,7 +90,7 @@ module Moonshot
         end
 
         if Time.now.to_i > start + 30
-          raise "ChangeSet did not complete creation within 30 seconds!"
+          raise 'ChangeSet did not complete creation within 30 seconds!'
         end
 
         sleep 0.25 # http://bit.ly/1qY1ZXJ

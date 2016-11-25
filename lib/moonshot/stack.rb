@@ -49,34 +49,17 @@ module Moonshot
       raise "No stack found #{@name.blue}!" unless stack_exists?
 
       change_set = ChangeSet.new(new_change_set, @name)
-      @ilog.start_threaded "Waiting for ChangeSet #{change_set.name.blue} to be created." do |s|
-        change_set.wait_for_change_set
-
-        if change_set.valid?
-          s.success "ChangeSet #{change_set.name.blue} ready!"
-        else
-          s.failure "ChangeSet failed to create: #{change_set.invalid_reason}"
-          should_wait = false
-        end
-      end
-
+      wait_for_change_set(change_set)
       return unless change_set.valid?
 
       if dry_run
         change_set.display_changes
       elsif !force
         change_set.display_changes
-        change_set.confirm? or raise "ChangeSet rejected!"
+        change_set.confirm? || raise('ChangeSet rejected!')
       end
 
-      @ilog.start "Executing ChangeSet #{change_set.name.blue} for #{stack_name}." do |s|
-        change_set.execute
-        s.success "Executed ChangeSet #{change_set.name.blue} for #{stack_name}."
-      end
-
-      success = wait_for_stack_state(:stack_update_complete, 'updated')
-      raise 'Failed to update the CloudFormation Stack.' unless success
-      success
+      execute_change_set(change_set)
     end
 
     def delete
@@ -354,6 +337,29 @@ module Moonshot
       success('CloudFormation template is valid.')
     rescue => e
       critical('Invalid CloudFormation template!', e.message)
+    end
+
+    def wait_for_change_set(change_set)
+      @ilog.start_threaded "Waiting for ChangeSet #{change_set.name.blue} to be created." do |s|
+        change_set.wait_for_change_set
+
+        if change_set.valid?
+          s.success "ChangeSet #{change_set.name.blue} ready!"
+        else
+          s.failure "ChangeSet failed to create: #{change_set.invalid_reason}"
+        end
+      end
+    end
+
+    def execute_change_set(change_set)
+      @ilog.start_threaded "Executing ChangeSet #{change_set.name.blue} for #{stack_name}." do |s|
+        change_set.execute
+        s.success "Executed ChangeSet #{change_set.name.blue} for #{stack_name}."
+      end
+
+      success = wait_for_stack_state(:stack_update_complete, 'updated')
+      raise 'Failed to update the CloudFormation Stack.' unless success
+      success
     end
   end
 end

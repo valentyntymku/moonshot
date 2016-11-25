@@ -11,7 +11,7 @@ module Moonshot
       def parser
         parser = super
 
-        parser.on('--dry-run', TrueClass, 'Show the changes that would be applied, but do not execute them') do |v|
+        parser.on('--dry-run', TrueClass, 'Show the changes that would be applied, but do not execute them') do |v| # rubocop:disable LineLength
           @dry_run = v
         end
 
@@ -21,7 +21,7 @@ module Moonshot
       end
 
       def execute
-        @force = true if !Moonshot.config.interactive
+        @force = true unless Moonshot.config.interactive
         controller.update(dry_run: @dry_run, force: @force)
       end
     end
