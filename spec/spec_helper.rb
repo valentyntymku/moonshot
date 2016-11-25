@@ -73,7 +73,6 @@ shared_examples 'with a working moonshot application' do
   end
 
   before(:each) do
-    FileUtils.mkdir_p '/cloud_formation/parameters'
     FakeFS::FileSystem.clone(File.join(File.dirname(__FILE__), 'fs_fixtures'), '/')
   end
 end

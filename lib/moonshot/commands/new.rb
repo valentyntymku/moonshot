@@ -16,17 +16,11 @@ module Moonshot
 
           create_project_dir
           copy_defaults
-          create_file(parameter_path)
-          create_file(template_path)
           fill_moonfile
           print_success_message
         end
 
         private
-
-        def cwd
-          Dir.pwd
-        end
 
         def create_project_dir
           raise "Directory '#{@application_name}' already exists!" \
@@ -35,7 +29,7 @@ module Moonshot
         end
 
         def project_path
-          @project_path ||= File.join(cwd, @application_name)
+          @project_path ||= File.join(Dir.pwd, @application_name)
         end
 
         def copy_defaults
@@ -43,55 +37,39 @@ module Moonshot
           FileUtils.cp_r(target_path, project_path)
         end
 
-        def create_file(path)
-          FileUtils.touch(path)
-        end
-
-        def moonfile_path
-          File.join(project_path, 'Moonfile.rb')
-        end
-
-        def parameter_path
-          File.join(cf_dir, 'parameters', "#{@application_name}.yml")
-        end
-
-        def template_path
-          File.join(cf_dir, "#{@application_name}.json")
-        end
-
-        def cf_dir
-          File.join(project_path, 'cloud_formation')
-        end
-
         def fill_moonfile
-          File.open(moonfile_path, 'w') { |f| f.write generate_moonfile }
+          File.open(File.join(project_path, 'Moonfile.rb'), 'w') { |f| f.write generate_moonfile }
         end
 
         def generate_moonfile
           <<-EOF
-            Moonshot.config do |m|
-              m.app_name = '#{@application_name}'
-              m.artifact_repository = S3Bucket.new('<your_bucket>')
-              m.build_mechanism = Script.new('bin/build.sh')
-              m.deployment_mechanism = CodeDeploy.new(asg: 'AutoScalingGroup')
-            end
-        	EOF
+Moonshot.config do |m|
+  m.app_name             = '#{@application_name}'
+  m.artifact_repository  = S3Bucket.new('<your_bucket>')
+  m.build_mechanism      = Script.new('bin/build.sh')
+  m.deployment_mechanism = CodeDeploy.new(asg: 'AutoScalingGroup')
+end
+EOF
         end
 
         def print_success_message
-          warn 'Your application is configured, the following changes have '\
-               'been made to your project directory:'
-          warn ''
-          warn '- Created a Moonfile.rb where you can configure your project.'
-          warn '- Created moonshot/plugins where you can add hooks to core '\
-               'Moonshot actions.'
-          warn '- Created moonshot/cli_extensions where you can create '\
-               'project-specific commands.'
-          warn ''
-          warn 'You will also need to ensure your Amazon account is configured'\
-               ' for CodeDeploy, by creating a role that allows deployments. '\
-               'See: http://moonshot.readthedocs.io/en/latest/mechanisms/'\
-               'deployment/'
+          warn <<-EOF
+Your application is configured, the following changes have been made
+to your project directory:
+
+  * Created Moonfile.rb, where you can configure your project.
+  * Created moonshot/plugins, where you can place custom Ruby code
+    to add hooks to core Moonshot actions (create, update, delete, etc.)
+  * Created moonshot/cli_extensions, where you can place custom Ruby
+    code to add your own project-specific commands to Moonshot.
+  * Created moonshot/template.yml, where you can build your
+    CloudFormation template.
+
+You will also need to ensure your Amazon account is configured for
+CodeDeploy by creating a role that allows deployments.
+
+See: http://moonshot.readthedocs.io/en/latest/mechanisms/deployment/
+EOF
         end
       end
     end

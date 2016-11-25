@@ -17,7 +17,7 @@ end
 ```
 
 This example assumes:
-- You have a CloudFormation JSON template in folder called "cloud_formation/my-service.json".
+- You have a CloudFormation JSON template in folder called "moonshot/template.json".
 - You have an S3 bucket called "my-service-builds".
 - You have a script in "script/build.sh" that will build a tarball output.tar.gz.
 - You have a working CodeDeploy setup, including the CodeDeployRole.

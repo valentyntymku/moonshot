@@ -4,6 +4,8 @@ module Moonshot
   # A StackTemplate loads the template from disk and stores information
   # about it.
   class StackTemplate
+    attr_reader :filename
+
     def initialize(filename)
       @filename = filename
     end
