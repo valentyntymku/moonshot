@@ -97,46 +97,28 @@ describe Moonshot::Stack do
 
   describe '#template_file' do
     it 'should return the template file path' do
-      path = File.join(Dir.pwd, 'cloud_formation', 'rspec-app.json')
+      path = File.join(Dir.pwd, 'moonshot', 'template.yml')
       expect(subject.template_file).to eq(path)
     end
   end
 
-  describe '#parameters_file' do
-    it 'should return the parameters file path' do
-      path = File.join(Dir.pwd, 'cloud_formation', 'parameters', 'rspec-app-staging.yml')
-      expect(subject.parameters_file).to eq(path)
-    end
-  end
-
   describe '#template' do
-    let(:yaml_path) { File.join(Dir.pwd, 'cloud_formation', 'rspec-app.yml') }
-    let(:json_path) { File.join(Dir.pwd, 'cloud_formation', 'rspec-app.json') }
+    let(:yaml_path) { File.join(Dir.pwd, 'moonshot', 'template.yml') }
+    let(:json_path) { File.join(Dir.pwd, 'moonshot', 'template.json') }
+    let(:yaml_legacy_path) { File.join(Dir.pwd, 'cloud_formation', 'rspec-app.yml') }
+    let(:json_legacy_path) { File.join(Dir.pwd, 'cloud_formation', 'rspec-app.json') }
 
-    context 'when there is a template file in both formats' do
-      it 'should prefer the JSON formatted template file' do
-        expect(subject.template).to be_an_instance_of(Moonshot::JsonStackTemplate)
-      end
-    end
-
-    context 'when there is only one kind of template file available' do
-      it 'should pick the JSON template file by default' do
-        FakeFS::File.delete(yaml_path)
-        expect(subject.template).to be_an_instance_of(Moonshot::JsonStackTemplate)
-      end
-
-      it 'should fall back to YAML if no JSON template was found' do
-        FakeFS::File.delete(json_path)
-        expect(subject.template).to be_an_instance_of(Moonshot::YamlStackTemplate)
-      end
-    end
-
-    context 'when there is no template file available' do
-      it 'should raise RuntimeError' do
-        [yaml_path, json_path].each { |p| FakeFS::File.delete(p) }
-
-        expect { subject.template }.to raise_error(RuntimeError)
-      end
+    it 'should look for templates in the preferred order' do
+      expect(subject.template.filename).to eq(yaml_path)
+      FakeFS::File.delete(yaml_path)
+      expect(subject.template.filename).to eq(json_path)
+      FakeFS::File.delete(json_path)
+      expect(subject.template.filename).to eq(yaml_legacy_path)
+      FakeFS::File.delete(yaml_legacy_path)
+      expect(subject.template.filename).to eq(json_legacy_path)
+      FakeFS::File.delete(json_legacy_path)
+      expect { subject.template }
+        .to raise_error(RuntimeError, /No template found/)
     end
   end
 end

@@ -131,16 +131,6 @@ module Moonshot
       end
     end
 
-    # Build a hash of overrides that would be applied to this stack by an
-    # update.
-    def overrides
-      if File.exist?(parameters_file)
-        YAML.load_file(parameters_file) || {}
-      else
-        {}
-      end
-    end
-
     # Return a Hash of the default values defined in the stack template.
     def default_values
       h = {}
@@ -151,25 +141,12 @@ module Moonshot
     end
 
     def template
-      @template ||= load_template_file
+      load_template_file
     end
 
     # @return [String] the path to the template file.
     def template_file
-      json = json_template_path
-      yaml = yaml_template_path
-
-      @template_file ||= Dir[json].first || Dir[yaml].first
-
-      raise 'CloudFormation template not found at'\
-            "#{json} or #{yaml}!" unless @template_file
-
-      @template_file
-    end
-
-    # @return [String] the path to the parameters file.
-    def parameters_file
-      File.join(@config.project_root, 'cloud_formation', 'parameters', "#{@name}.yml")
+      load_template_file.filename
     end
 
     private
@@ -178,32 +155,21 @@ module Moonshot
       "CloudFormation Stack #{@name.blue}"
     end
 
-    def json_template_path
-      "#{raw_template_file_name}.json"
-    end
-
-    def yaml_template_path
-      "#{raw_template_file_name}.yml"
-    end
-
-    # @return [String] the path to the template file without extension.
-    def raw_template_file_name
-      @raw_template_file_name ||=
-        File.join(@config.project_root, 'cloud_formation', @config.app_name)
-    end
-
     def load_template_file
-      json_template = JsonStackTemplate.new(json_template_path)
-      yaml_template = YamlStackTemplate.new(yaml_template_path)
-      case
-      when json_template.exist?
-        json_template
-      when yaml_template.exist?
-        yaml_template
-      else
-        raise "CloudFormation template not found at #{json_template_path} "\
-              "or #{yaml_template_path}!" unless @template_file
-      end
+      templates = [
+        YamlStackTemplate.new(File.join(@config.project_root, 'moonshot', 'template.yml')),
+        JsonStackTemplate.new(File.join(@config.project_root, 'moonshot', 'template.json')),
+
+        # Support the legacy file location from Moonshot 1.0.
+        YamlStackTemplate.new(
+          File.join(@config.project_root, 'cloud_formation', "#{@config.app_name}.yml")),
+        JsonStackTemplate.new(
+          File.join(@config.project_root, 'cloud_formation', "#{@config.app_name}.json"))
+      ]
+
+      template = templates.find(&:exist?)
+      raise 'No template found in moonshot/template.{yml,json}!' unless template
+      template
     end
 
     def stack_parameters
