@@ -7,7 +7,6 @@ pages:
   - 'CLI Commands': 'user-guide/cli.md'
   - 'Including Moonshot in your project': 'user-guide/include_in_your_project.md'
   - 'Working with parent stacks': 'user-guide/parent_stacks.md'
-  - 'Stack parameter strategies': 'user-guide/stack_parameter_strategies.md'
 - Mechanisms:
   - 'Artifact Repository': 'mechanisms/artifact-repository.md'
   - 'Build': 'mechanisms/build.md'
