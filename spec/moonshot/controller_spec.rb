@@ -152,7 +152,7 @@ describe 'update' do
       expect(stack).to receive(:parameters).and_return(existing_parameters)
       expect(stack).to receive(:update)
 
-      subject.update
+      subject.update(dry_run: false, force: false)
 
       pc = subject.config.parameters
       expect(pc.keys).to eq(%w(InputParameter1 InputParameter2 InputParameter3 InputParameter4))

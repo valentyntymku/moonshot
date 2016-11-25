@@ -7,6 +7,7 @@ require_relative 'stack_parameter_printer'
 require_relative 'stack_output_printer'
 require_relative 'stack_asg_printer'
 require_relative 'unicode_table'
+require_relative 'change_set'
 require 'yaml'
 
 module Moonshot
@@ -44,22 +45,21 @@ module Moonshot
       should_wait ? wait_for_stack_state(:stack_create_complete, 'created') : true
     end
 
-    def update
+    def update(dry_run:, force:)
       raise "No stack found #{@name.blue}!" unless stack_exists?
 
-      should_wait = true
-      @ilog.start "Updating #{stack_name}." do |s|
-        if update_stack
-          s.success "Initiated update for #{stack_name}."
-        else
-          s.success 'No Stack update required.'
-          should_wait = false
-        end
+      change_set = ChangeSet.new(new_change_set, @name)
+      wait_for_change_set(change_set)
+      return unless change_set.valid?
+
+      if dry_run
+        change_set.display_changes
+      elsif !force
+        change_set.display_changes
+        change_set.confirm? || raise('ChangeSet rejected!')
       end
 
-      success = should_wait ? wait_for_stack_state(:stack_update_complete, 'updated') : true
-      raise 'Failed to update the CloudFormation Stack.' unless success
-      success
+      execute_change_set(change_set)
     end
 
     def delete
@@ -232,20 +232,23 @@ module Moonshot
       raise 'You are not authorized to perform create_stack calls.'
     end
 
-    # @return [Boolean]
-    #   true if a stack update was required and initiated, false otherwise.
-    def update_stack
-      cf_client.update_stack(
+    def new_change_set
+      change_set_name = [
+        'moonshot',
+        @name,
+        Time.now.utc.to_i.to_s
+      ].join('-')
+
+      cf_client.create_change_set(
+        change_set_name: change_set_name,
+        description: "Moonshot update command for application '#{Moonshot.config.app_name}'",
         stack_name: @name,
         template_body: template.body,
         capabilities: ['CAPABILITY_IAM'],
         parameters: @config.parameters.values.map(&:to_cf)
       )
-      true
-    rescue Aws::CloudFormation::Errors::ValidationError => e
-      raise e.message unless
-        e.message == 'No updates are to be performed.'
-      false
+
+      change_set_name
     end
 
     # TODO: Refactor this into it's own class.
@@ -334,6 +337,29 @@ module Moonshot
       success('CloudFormation template is valid.')
     rescue => e
       critical('Invalid CloudFormation template!', e.message)
+    end
+
+    def wait_for_change_set(change_set)
+      @ilog.start_threaded "Waiting for ChangeSet #{change_set.name.blue} to be created." do |s|
+        change_set.wait_for_change_set
+
+        if change_set.valid?
+          s.success "ChangeSet #{change_set.name.blue} ready!"
+        else
+          s.failure "ChangeSet failed to create: #{change_set.invalid_reason}"
+        end
+      end
+    end
+
+    def execute_change_set(change_set)
+      @ilog.start_threaded "Executing ChangeSet #{change_set.name.blue} for #{stack_name}." do |s|
+        change_set.execute
+        s.success "Executed ChangeSet #{change_set.name.blue} for #{stack_name}."
+      end
+
+      success = wait_for_stack_state(:stack_update_complete, 'updated')
+      raise 'Failed to update the CloudFormation Stack.' unless success
+      success
     end
   end
 end

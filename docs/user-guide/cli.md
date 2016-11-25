@@ -139,12 +139,19 @@ ELB failures which will result in instance replacements.
 
 ## `moonshot update`
 
-Update an environment with the latest local CloudFormation template,
-and any Parameter updates specified via `--answer-file` or
-`--parameter`. If there are new parameters in the template and they
-are not specified, the user will be prompted for their values, unless
-`--no-interactive` is specified, in which case an error will be
-displayed.
+Update an environment with the latest local CloudFormation template
+using a ChangeSet. Keep all existing parameters, unless they are
+specified by `--answer-file` and/or `--parameter`. If there are new
+parameters in the template and they are not specified, the user will
+be prompted for their values, unless `--no-interactive` is specified,
+in which case an error will be displayed.
+
+The user is prompted interactively to accept the ChangeSet, unless
+`--no-interactive` is set. `--force` can be specified to automatically
+accept the changes. If `--dry-run` is set, the changes are
+automatically rejected after being displayed, which can be useful for
+seeing what the impact of a template change might be in a given
+environment.
 
 ### Options
 
@@ -163,6 +170,17 @@ See [create][#moonshot-create].
 #### `--[no-]show-all-events`
 
 See [create][#moonshot-create].
+
+#### `--force`
+
+Automatically accept the ChangeSet that was generated, without
+prompting the user. The changes are still displayed in the log
+output.
+
+#### `--dry-run`
+
+Automatically reject the ChangeSet that was generated, after
+displaying the changes.
 
 ### Examples
 
