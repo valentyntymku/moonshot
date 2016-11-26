@@ -2,6 +2,8 @@ module Moonshot
   module Commands
     class Update < Moonshot::Command
       include ParameterArguments
+      include ShowAllEventsOption
+      include ParentStackOption
 
       self.usage = 'update [options]'
       self.description = 'Update the CloudFormation stack within an environment.'

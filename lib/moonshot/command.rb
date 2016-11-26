@@ -30,15 +30,6 @@ module Moonshot
         o.on('--[no-]interactive-logger', TrueClass, 'Enable or disable fancy logging') do |v|
           @use_interactive_logger = v
         end
-
-        o.on('--[no-]show-all-events', FalseClass, 'Show all stack events during update') do |v|
-          Moonshot.config.show_all_stack_events = v
-        end
-
-        o.on('-pPARENT_STACK', '--parent=PARENT_STACK',
-             'Parent stack to import parameters from') do |v|
-          Moonshot.config.parent_stacks = [v]
-        end
       end
     end
 

@@ -8,16 +8,6 @@ Use this option to disable the animated logger. The logger is also
 disabed automatically in environments where STDIN is not a tty, such
 as Jenkins.
 
-## `--[no-]show-all-events`
-
-*Default: Disabled*
-
-By default, Moonshot show only error CloudFormation events during the
-`create`, `update`, and `delete` actions. With this enabled, all
-events are displayed to the screen. This can be quite noisy, but also
-helpful if you want to see where your stack updates are taking the
-most time, for example.
-
 ## `--[no-]verbose / -v`
 
 *Default: Disabled*
@@ -75,6 +65,16 @@ files or on the command line that they may want to change the default
 value of.
 
 ### Options
+
+## `--[no-]show-all-events`
+
+*Default: Disabled*
+
+By default, Moonshot show only error CloudFormation events during the
+`create`, `update`, and `delete` actions. With this enabled, all
+events are displayed to the screen. This can be quite noisy, but also
+helpful if you want to see where your stack updates are taking the
+most time, for example.
 
 #### `--parent=STACK_NAME / -p STACK_NAME`
 
@@ -312,6 +312,12 @@ moonshot deploy 1.0.0
 ## `moonshot delete`
 
 Delete an existing environment.
+
+### Options
+
+#### `--[no-]show-all-events`
+
+See [create][#moonshot-create].
 
 ### Example
 
