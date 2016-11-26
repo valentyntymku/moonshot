@@ -2,6 +2,8 @@ module Moonshot
   module Commands
     class Create < Moonshot::Command
       include ParameterArguments
+      include ShowAllEventsOption
+      include ParentStackOption
 
       self.usage = 'create [options]'
       self.description = 'Create a new environment'
