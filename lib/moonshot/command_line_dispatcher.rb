@@ -10,8 +10,11 @@ module Moonshot
       # Look to see if we're allowed only to run in certain accounts, or
       # not allowed to run in specific accounts.
       check_account_restrictions
+
+      # Allow any mechanisms or plugins to hook into this CLI command.
       handler = @klass.new
-      handler.parser.parse!
+      parser = build_parser(handler)
+      parser.parse!
 
       unless @args.size == handler.method(:execute).arity
         warn handler.parser.help
@@ -35,6 +38,34 @@ module Moonshot
       end
 
       raise 'Command account restriction violation.'
+    end
+
+    def build_parser(handler)
+      parser = handler.parser
+
+      # Each mechanism / plugin may manipulate the OptionParser object
+      # associated with this command.
+      [:build_mechanism, :deployment_mechanism, :artifact_repository].each do |prov|
+        provider = Moonshot.config.send(prov)
+
+        if provider.respond_to?(hook_func_name(@command))
+          parser = provider.send(hook_func_name(@command), parser)
+        end
+      end
+
+      Moonshot.config.plugins.each do |plugin|
+        if plugin.respond_to?(hook_func_name(@command))
+          parser = plugin.send(hook_func_name(@command), parser)
+        end
+      end
+
+      parser
+    end
+
+    # Name of the function a plugin or mechanism could define to manipulate
+    # the parser for a command.
+    def hook_func_name(command)
+      command.tr('-', '_') << '_cli_hook'
     end
   end
 end
