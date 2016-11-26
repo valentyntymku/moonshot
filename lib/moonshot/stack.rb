@@ -1,13 +1,3 @@
-require_relative 'creds_helper'
-require_relative 'doctor_helper'
-
-require_relative 'yaml_stack_template'
-require_relative 'json_stack_template'
-require_relative 'stack_parameter_printer'
-require_relative 'stack_output_printer'
-require_relative 'stack_asg_printer'
-require_relative 'unicode_table'
-require_relative 'change_set'
 require 'yaml'
 
 module Moonshot

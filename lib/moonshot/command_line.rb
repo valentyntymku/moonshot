@@ -1,6 +1,3 @@
-require 'thor'
-require_relative 'command_line_dispatcher'
-
 module Moonshot
   # This class implements the command-line `moonshot` tool.
   class CommandLine
@@ -132,7 +129,6 @@ module Moonshot
         ARGV.delete_at(0)
         ARGV.push('-h')
       elsif ARGV[0] == 'new'
-        require_relative 'commands/new'
         app_name = ARGV[1]
         ::Moonshot::Commands::New.run!(app_name)
         return true
