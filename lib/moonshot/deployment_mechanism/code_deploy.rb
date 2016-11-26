@@ -40,6 +40,7 @@ class Moonshot::DeploymentMechanism::CodeDeploy # rubocop:disable ClassLength
     @group_name = group_name
     @codedeploy_role = role
     @codedeploy_config = config_name
+    @ignore_app_stop_failures = false
   end
 
   def post_create_hook
@@ -70,13 +71,7 @@ class Moonshot::DeploymentMechanism::CodeDeploy # rubocop:disable ClassLength
     deployment_id = nil
 
     ilog.start_threaded 'Creating Deployment' do |s|
-      res = cd_client.create_deployment(
-        application_name: app_name,
-        deployment_group_name: group_name,
-        revision: revision_for_artifact_repo(artifact_repo, version_name),
-        deployment_config_name: @codedeploy_config,
-        description: "Deploying version #{version_name}"
-      )
+      res = create_deployment(artifact_repo, version_name)
       deployment_id = res.deployment_id
       s.continue "Created Deployment #{deployment_id.blue}."
       success = wait_for_deployment(deployment_id, s)
@@ -95,6 +90,17 @@ class Moonshot::DeploymentMechanism::CodeDeploy # rubocop:disable ClassLength
       end
     end
   end
+
+  def deploy_cli_hook(parser)
+    parser.on('--ignore-app-stop-failures', TrueClass, 'Continue deployment on ApplicationStop failures') do |v| # rubocop:disable LineLength
+      puts "ignore = #{v}"
+      @ignore_app_stop_failures = v
+    end
+
+    parser
+  end
+
+  alias push_cli_hook deploy_cli_hook
 
   private
 
@@ -331,6 +337,17 @@ class Moonshot::DeploymentMechanism::CodeDeploy # rubocop:disable ClassLength
         bundle_type: 'tgz'
       }
     }
+  end
+
+  def create_deployment(artifact_repo, version_name)
+    cd_client.create_deployment(
+      application_name: app_name,
+      deployment_group_name: group_name,
+      revision: revision_for_artifact_repo(artifact_repo, version_name),
+      deployment_config_name: @codedeploy_config,
+      description: "Deploying version #{version_name}",
+      ignore_application_stop_failures: @ignore_app_stop_failures
+    )
   end
 
   def doctor_check_code_deploy_role

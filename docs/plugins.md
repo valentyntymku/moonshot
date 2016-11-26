@@ -39,7 +39,40 @@ retreive the name of the stack, stack parameters and stack outputs. This support
 should be expanded in the future to provide Plugins with more control over the
 CloudFormation stack.
 
-## Adding a plugin to a CLI tool.
+## Manipulating CLI options with Plugins
+
+If you wish to modify the options accepted by a core Moonshot command
+in order to affect the pre/post hooks defined in your plugin,
+implement a method called `<action>_cli_hook`. This hook will be
+passed an instance of OptionParser, which you can manipulate and
+return. For example:
+
+```ruby
+class MyPlugin
+  def pre_build(_)
+    puts "FULL SPEED AHEAD!!!!" if @hyperdrive
+  end
+
+  def build_cli_hook(parser)
+    parser.on('--foo', '-F', TrueClass, 'ENABLE HYPERDRIVE') do |v|
+      @hyperdrive = v
+    end
+  end
+end
+```
+
+With this plugin, the output of `moonshot build --help` reflects the
+new command line option:
+
+```
+Usage: moonshot build VERSION
+    -v, --[no-]verbose               Show debug logging
+    -n, --environment=NAME           Which environment to operate on.
+        --[no-]interactive-logger    Enable or disable fancy logging
+    -F, --foo                        ENABLE HYPERDRIVE
+```
+
+## Adding a plugin to Moonshot
 
 Once you have defined or included your plugin class, you can add a
 plugin by modifying your `Moonfile.rb` file, like so:
