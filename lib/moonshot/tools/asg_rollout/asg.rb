@@ -1,6 +1,3 @@
-require_relative 'asg_instance'
-require_relative 'instance_health'
-
 module Moonshot
   module Tools
     class ASGRollout

@@ -1,5 +1,3 @@
-require_relative 'parameter_arguments'
-
 module Moonshot
   module Commands
     class Update < Moonshot::Command

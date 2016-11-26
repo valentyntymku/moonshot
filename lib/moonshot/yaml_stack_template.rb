@@ -1,5 +1,4 @@
 require 'yaml'
-require_relative 'stack_template'
 
 module Moonshot
   # Handles YAML formatted AWS template files.

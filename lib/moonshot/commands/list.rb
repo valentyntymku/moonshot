@@ -1,6 +1,3 @@
-require_relative '../stack_lister'
-require_relative '../stack_list_printer'
-
 module Moonshot
   module Commands
     class List < Moonshot::Command

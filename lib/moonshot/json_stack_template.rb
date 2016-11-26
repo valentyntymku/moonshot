@@ -1,5 +1,4 @@
 require 'json'
-require_relative 'stack_template'
 
 module Moonshot
   # Handles JSON formatted AWS template files.

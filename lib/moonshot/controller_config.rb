@@ -1,7 +1,3 @@
-require_relative 'ssh_config'
-require_relative 'task'
-require_relative 'ask_user_source'
-
 module Moonshot
   # Holds configuration for Moonshot::Controller
   class ControllerConfig

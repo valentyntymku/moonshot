@@ -1,5 +1,3 @@
-require_relative 'stack_parameter'
-
 module Moonshot
   # A StackTemplate loads the template from disk and stores information
   # about it.

@@ -1,6 +1,5 @@
 require 'rubygems/package'
 require 'zlib'
-require_relative '../moonshot/creds_helper'
 
 module Moonshot
   module Plugins

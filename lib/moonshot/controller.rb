@@ -1,10 +1,3 @@
-require_relative 'ssh_target_selector'
-require_relative 'ssh_command_builder'
-
-require_relative 'stack_parameter'
-require_relative 'parameter_collection'
-require_relative 'parent_stack_parameter_loader'
-
 module Moonshot
   # The Controller coordinates and performs all Moonshot actions.
   class Controller # rubocop:disable ClassLength

@@ -1,7 +1,3 @@
-require_relative 'asg_rollout_config'
-require_relative 'asg_rollout/asg'
-require_relative 'asg_rollout/hook_exec_environment'
-
 module Moonshot
   module Tools
     class ASGRollout
