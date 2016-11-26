@@ -32,6 +32,7 @@ end
   'resources_helper',
 
   # Core
+  'account_context',
   'interactive_logger_proxy',
   'command_line',
   'command',

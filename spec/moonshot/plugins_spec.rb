@@ -13,10 +13,11 @@ describe 'Plugins support' do
   let(:stack) { instance_double('Moonshot::Stack') }
 
   subject do
-    Moonshot::Controller.new do |config|
-      config.app_name = 'my-app'
-      config.plugins = [plugin1, plugin2]
-    end
+    config = Moonshot::ControllerConfig.new
+    config.app_name = 'my-app'
+    config.plugins = [plugin1, plugin2]
+
+    Moonshot::Controller.new(config)
   end
 
   before(:each) do

@@ -1,4 +1,5 @@
 require 'thor'
+require_relative 'command_line_dispatcher'
 
 module Moonshot
   # This class implements the command-line `moonshot` tool.
@@ -12,7 +13,7 @@ module Moonshot
       @classes || []
     end
 
-    def run! # rubocop:disable AbcSize, CyclomaticComplexity, MethodLength, PerceivedComplexity
+    def run! # rubocop:disable CyclomaticComplexity, MethodLength, PerceivedComplexity
       # Commands defined as Moonshot::Commands require a properly
       # configured Moonshot.rb and supporting files. Without them, we only
       # support `--help` and `new`.
@@ -65,15 +66,9 @@ module Moonshot
         raise "Command not found '#{command}'"
       end
 
-      handler = @commands[command].new
-      handler.parser.parse!
+      command_class = @commands[command]
 
-      unless ARGV.size == handler.method(:execute).arity
-        warn handler.parser.help
-        raise "Invalid command line for '#{command}'."
-      end
-
-      handler.execute(*ARGV)
+      CommandLineDispatcher.new(command, command_class, ARGV).dispatch!
     end
 
     def load_plugins(moonfile_dir)

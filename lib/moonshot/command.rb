@@ -5,7 +5,7 @@ module Moonshot
   class Command
     module ClassMethods
       # TODO: Can we auto-generate usage for commands with no positional arguments, at least?
-      attr_accessor :usage, :description
+      attr_accessor :usage, :description, :only_in_account
     end
 
     def self.inherited(base)
@@ -46,10 +46,9 @@ module Moonshot
 
     # Build a Moonshot::Controller from the CLI options.
     def controller
-      controller = Moonshot::Controller.new
-
-      # Apply CLI options to configuration defined by Moonfile.
-      controller.config = Moonshot.config
+      config = Moonshot.config
+      config.update_for_account!
+      controller = Moonshot::Controller.new(config)
 
       # Degrade to a more compatible logger if the terminal seems outdated,
       # or at the users request.
