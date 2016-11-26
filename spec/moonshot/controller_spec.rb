@@ -1,7 +1,8 @@
 describe 'create' do
   include_context 'with a CloudFormation stubbed client'
 
-  subject { Moonshot::Controller.new }
+  let(:config) { Moonshot::ControllerConfig.new }
+  subject { Moonshot::Controller.new(config) }
 
   let(:stack) { instance_double(Moonshot::Stack) }
   let(:ask_user_source) { instance_double(Moonshot::AskUserSource) }
@@ -117,7 +118,8 @@ end
 describe 'update' do
   include_context 'with a CloudFormation stubbed client'
 
-  subject { Moonshot::Controller.new }
+  let(:config) { Moonshot::ControllerConfig.new }
+  subject { Moonshot::Controller.new(config) }
 
   let(:stack) { instance_double(Moonshot::Stack) }
 

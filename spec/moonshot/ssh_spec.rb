@@ -1,12 +1,13 @@
 describe 'Moonshot SSH features' do
   subject do
-    Moonshot::Controller.new do |c|
-      c.app_name = 'MyApp'
-      c.environment_name = 'prod'
-      c.ssh_config.ssh_user = 'joeuser'
-      c.ssh_config.ssh_identity_file = '/Users/joeuser/.ssh/thegoods.key'
-      c.ssh_command = 'cat /etc/passwd'
-    end
+    c = Moonshot::ControllerConfig.new
+    c.app_name = 'MyApp'
+    c.environment_name = 'prod'
+    c.ssh_config.ssh_user = 'joeuser'
+    c.ssh_config.ssh_identity_file = '/Users/joeuser/.ssh/thegoods.key'
+    c.ssh_command = 'cat /etc/passwd'
+
+    Moonshot::Controller.new(c)
   end
 
   describe 'Moonshot::Controller#ssh' do

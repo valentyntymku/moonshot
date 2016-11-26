@@ -5,6 +5,8 @@ require_relative 'ask_user_source'
 module Moonshot
   # Holds configuration for Moonshot::Controller
   class ControllerConfig
+    attr_reader :account_alias
+
     attr_accessor :additional_tag
     attr_accessor :answer_file
     attr_accessor :app_name
@@ -36,6 +38,8 @@ module Moonshot
       @parameter_sources        = {}
       @parameters               = ParameterCollection.new
       @parent_stacks            = []
+      @account_alias            = nil
+      @per_account_config       = {}
       @plugins                  = []
       @project_root             = Dir.pwd
       @show_all_stack_events    = false
@@ -47,6 +51,20 @@ module Moonshot
 
       user = ENV.fetch('USER', 'default-user').gsub(/\W/, '')
       @environment_name = "dev-#{user}"
+    end
+
+    def in_account(name, &blk)
+      # Store account specific configs as lambdas, to be evaluated
+      # if the account name matches during controller execution.
+      @per_account_config[name] = blk
+    end
+
+    def update_for_account!
+      # Evaluated any account-specific configuration.
+      @account_alias = Moonshot::AccountContext.get
+      if @account_alias && @per_account_config.key?(account_alias)
+        @per_account_config[@account_alias].call(self)
+      end
     end
   end
 end
