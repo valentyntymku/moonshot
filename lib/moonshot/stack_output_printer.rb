@@ -8,9 +8,10 @@ module Moonshot
 
     def print
       o_table = @table.add_leaf('Stack Outputs')
-      @stack.outputs.each do |k, v|
-        o_table.add_line("#{k}: #{v}")
+      rows = @stack.outputs.sort.map do |key, value|
+        ["#{key}:", value]
       end
+      o_table.add_table(rows)
     end
   end
 end
