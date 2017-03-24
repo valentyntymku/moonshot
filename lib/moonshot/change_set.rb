@@ -97,6 +97,9 @@ module Moonshot
         end
 
         sleep 5 # http://bit.ly/1qY1ZXJ
+        # Wait 5 seconds because other waiters seem to wait at least 5 seconds
+        # before repeating requests.
+        # See: https://github.com/aws/aws-sdk-ruby/blob/master/aws-sdk-core/apis/cloudformation/2010-05-15/waiters-2.json#L5
       end
     end
   end
