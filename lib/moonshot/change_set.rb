@@ -79,7 +79,7 @@ module Moonshot
     # Still no support for this waiter, but it's planned.
     # https://github.com/aws/aws-sdk-ruby/issues/1388
     def wait_for_change_set
-      wait_seconds = Moonshot.config.changeset_wait_time || 30
+      wait_seconds = Moonshot.config.changeset_wait_time || 90
       start = Time.now.to_i
 
       loop do
