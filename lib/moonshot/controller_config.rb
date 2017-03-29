@@ -8,6 +8,7 @@ module Moonshot
     attr_accessor :app_name
     attr_accessor :artifact_repository
     attr_accessor :build_mechanism
+    attr_accessor :changeset_wait_time
     attr_accessor :deployment_mechanism
     attr_accessor :dev_build_name_proc
     attr_accessor :environment_name
