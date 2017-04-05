@@ -63,15 +63,19 @@ module Moonshot # rubocop:disable Metrics/ModuleLength
         'gemfile: .travis.build.Gemfile, os: linux '
       end
 
-      it 'should only make one attempt if the job is found' do
-        expect(subject).to receive(:sleep).once
-        expect(subject).to receive(:sh_out).and_return(output)
+      before(:each) do
+        Retriable.configure do |c|
+          c.sleep_disabled = true
+        end
+      end
+
+      it 'should return the right job number' do
+        expect(subject).to receive(:sh_out).and_return(output).once
 
         expect(subject.send(:wait_for_build, tag)).to eq(job_number)
       end
 
       it 'should only make the max number of attempts before failing' do
-        expect(subject).to receive(:sleep).exactly(10).times
         expect(subject).to receive(:sh_out).and_raise.exactly(10).times
 
         expect { subject.send(:wait_for_build, tag) }.to \
@@ -79,7 +83,6 @@ module Moonshot # rubocop:disable Metrics/ModuleLength
       end
 
       it 'should make attempts until the build is found' do
-        expect(subject).to receive(:sleep).exactly(3).times
         expect(subject).to receive(:sh_out).and_raise.twice
         expect(subject).to receive(:sh_out).and_return(output)
 
