@@ -99,10 +99,10 @@ module Moonshot
           end
 
           # adding parameters
-          if @backup_parameters
+          if @backup_parameters && Moonshot.config.answer_file
             add_str_to_tar(
               writer,
-              render('%{stack_name}-parameters.yml'),
+              Moonshot.config.answer_file,
               @parameters
             )
           end
