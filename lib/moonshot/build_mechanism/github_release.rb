@@ -119,7 +119,6 @@ module Moonshot::BuildMechanism
 
     def hub_create_release(semver, commitish, changelog_entry)
       return if hub_release_exists(semver)
-
       message = "#{semver}\n\n#{changelog_entry}"
       cmd = "hub release create #{semver} --commitish=#{commitish}"
       cmd << ' --prerelease' if semver.pre || semver.build
@@ -133,11 +132,13 @@ module Moonshot::BuildMechanism
     #
     # @return [Boolean]
     def hub_release_exists(semver)
-      sh_step("hub release show #{semver}")
-      log.info("release #{semver} already exists")
-      true
-    rescue RuntimeError
-      false
+      exists = false
+      sh_step("hub release show #{semver}", fail: false) do |_, output|
+        first_line = output.split("\n").first
+        exists = !first_line.nil? && first_line.strip == semver.to_s
+      end
+      log.info("release #{semver} already exists") if exists
+      exists
     end
 
     def validate_commit
