@@ -107,16 +107,21 @@ module Moonshot # rubocop:disable ModuleLength
     end
 
     describe '#hub_release_exists' do
-      it 'passes if the github release exists' do
-        expect(subject).to receive(:sh_step).with("hub release show #{tag}")
+      it 'calls sh_step with the hub release command' do
+        expect(subject).to receive(:sh_step).with(
+          "hub release show #{tag}",
+          fail: false
+        )
+        subject.send(:hub_release_exists, tag)
+      end
 
+      it 'passes if the github release exists' do
+        allow(subject).to receive(:sh_step).and_yield(nil, "#{tag}\nRelease comments")
         expect(subject.send(:hub_release_exists, tag)).to eq(true)
       end
 
       it 'fails if the github release does not exist' do
-        expect(subject).to receive(:sh_step).with("hub release show #{tag}")
-          .and_raise
-
+        allow(subject).to receive(:sh_step).and_yield(nil, '')
         expect(subject.send(:hub_release_exists, tag)).to eq(false)
       end
     end

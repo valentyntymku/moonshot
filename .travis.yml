@@ -7,6 +7,13 @@ cache: bundler
 # @see http://docs.travis-ci.com/user/workers/container-based-infrastructure/
 sudo: false
 
+addons:
+  apt:
+    sources:
+      - kalakris-cmake
+    packages:
+      - cmake
+
 before_install:
   - gem update --system
   - gem update bundler
