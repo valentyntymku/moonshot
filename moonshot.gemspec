@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency('interactive-logger', '~> 0.1.2')
   s.add_dependency('rotp', '~> 2.1.1')
   s.add_dependency('ruby-duration', '~> 3.2.3')
+  s.add_dependency('retriable')
   # Pin back activesupport (ruby-duration dependency) until we only support
   # Ruby >= 2.2.2.
   s.add_dependency('activesupport', '< 5.0.0')
