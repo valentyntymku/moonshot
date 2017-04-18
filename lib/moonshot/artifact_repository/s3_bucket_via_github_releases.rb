@@ -4,6 +4,7 @@ require 'digest'
 require 'securerandom'
 require 'semantic'
 require 'tmpdir'
+require 'retriable'
 
 module Moonshot::ArtifactRepository
   # S3 Bucket repository backed by GitHub releases.
@@ -115,25 +116,26 @@ module Moonshot::ArtifactRepository
     # @raise [RuntimeError] If the file fails to download correctly after 3
     #                       attempts.
     def download_from_github(version)
+      file_pattern = "*#{version}*.tar.gz"
       attempts = 0
-      begin
+
+      Retriable.retriable on: RuntimeError do
         # Make sure the directory is empty before downloading the release.
         FileUtils.rm(Dir.glob('*'))
 
         # Download the release and find the actual build file.
         sh_out("hub release download #{version}")
-        file = Dir.glob("*#{version}*.tar.gz").fetch(0)
 
+        raise "File '#{file_pattern}' not found." if Dir.glob(file_pattern).empty?
+
+        file = Dir.glob(file_pattern).fetch(0)
         unless (checksum = checksum_file(file)).nil?
           verify_download_checksum(file, checksum, attempt: attempts)
         end
-      rescue RuntimeError => e
         attempts += 1
-        retry unless attempts > 3
-        raise e
-      end
 
-      file
+        file
+      end
     end
 
     # Find the checksum file for a release, if there is one.
