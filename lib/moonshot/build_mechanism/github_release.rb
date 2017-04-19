@@ -17,8 +17,10 @@ module Moonshot::BuildMechanism
     def_delegator :@build_mechanism, :output_file
 
     # @param build_mechanism Delegates building after GitHub release is created.
-    def initialize(build_mechanism)
+    def initialize(build_mechanism, ci_status_timeout: 600, max_tag_find_timeout: 240)
       @build_mechanism = build_mechanism
+      @ci_status_timeout = ci_status_timeout
+      @max_tag_find_timeout = max_tag_find_timeout
     end
 
     def doctor_hook
@@ -113,7 +115,7 @@ module Moonshot::BuildMechanism
     def git_push_tag(remote, tag)
       cmd = "git push #{remote} refs/tags/#{tag}:refs/tags/#{tag}"
       sh_step(cmd) do
-        sleep 2 # GitHub needs a moment to register the tag.
+        hub_find_remote_tag(tag)
       end
     end
 
@@ -141,15 +143,23 @@ module Moonshot::BuildMechanism
       exists
     end
 
+    # Attempt to find the build. Rescue and re-attempt if the build can not
+    # be found on github yet.
+    def hub_find_remote_tag(tag_name)
+      retry_opts = {
+        max_elapsed_time: @max_tag_find_timeout,
+        multiplier: 2
+      }
+      sh_retry("hub ls-remote --exit-code --tags upstream #{tag_name}",
+               opts: retry_opts)
+    end
+
     def validate_commit
       cmd = "git show --stat #{@sha}"
       sh_step(cmd, msg: "Validate commit #{@sha}.") do |_, out|
         @commit_detail = out
       end
-      cmd = "hub ci-status --verbose #{@sha}"
-      sh_step(cmd, msg: "Check CI status for #{@sha}.") do |_, out|
-        @ci_statuses = out
-      end
+      @ci_statuses = check_ci_status(@sha)
     end
 
     def validate_changelog(version)
@@ -169,6 +179,25 @@ module Moonshot::BuildMechanism
       parser.parse.fetch(version) do
         raise "#{version} not found in CHANGELOG.md"
       end
+    end
+
+    # Checks for the commit's CI job status. If its not finished yet,
+    # wait till timeout.
+    #
+    # @param sha [String] Commit sha.
+    #
+    # @return [String] Status and links to the CI jobs
+    def check_ci_status(sha)
+      out = nil
+      retry_opts = {
+        max_elapsed_time: @ci_status_timeout,
+        base_interval: 10
+      }
+      ilog.start_threaded("Check CI status for #{sha}.") do |step|
+        out = sh_retry("hub ci-status --verbose #{sha}", opts: retry_opts)
+        step.success
+      end
+      out
     end
 
     def releases_url

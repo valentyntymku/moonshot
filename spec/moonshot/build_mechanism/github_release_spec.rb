@@ -125,5 +125,69 @@ module Moonshot # rubocop:disable ModuleLength
         expect(subject.send(:hub_release_exists, tag)).to eq(false)
       end
     end
+
+    describe '#hub_find_remote_tag' do
+      let(:tag) { '1.23.4' }
+
+      before(:each) do
+        Retriable.configure do |c|
+          c.sleep_disabled = true
+        end
+      end
+      it 'passes if the github release exists' do
+        expect(subject).to receive(:sh_out)
+          .with("hub ls-remote --exit-code --tags upstream #{tag}", stdin: '')
+          .and_return(tag)
+        expect(subject.send(:hub_find_remote_tag, tag)).to eq(tag)
+      end
+
+      it 'retries and passes if the github release exists' do
+        expect(subject).to receive(:sh_out)
+          .with("hub ls-remote --exit-code --tags upstream #{tag}", stdin: '')
+          .and_raise.twice
+        expect(subject).to receive(:sh_out)
+          .with("hub ls-remote --exit-code --tags upstream #{tag}", stdin: '')
+          .and_return(tag)
+        expect(subject.send(:hub_find_remote_tag, tag)).to eq(tag)
+      end
+
+      it 'retries and fails if the github release does not exist' do
+        expect(subject).to receive(:sh_out)
+          .with("hub ls-remote --exit-code --tags upstream #{tag}", stdin: '')
+          .and_raise(Shell::CommandError).at_least(:twice)
+
+        expect do
+          subject.send(:hub_find_remote_tag, tag)
+        end.to raise_error(Shell::CommandError)
+      end
+    end
+
+    describe '#check_ci_status' do
+      let(:sha) { '485173e66f42e0685d1fa9dd853027a583116e3d' }
+      let(:ci_statuses) { "Job 1: link\nJob 2: link\n" }
+      let(:step) do
+        instance_double(InteractiveLogger::Step)
+      end
+
+      before(:each) do
+        allow(resources.ilog).to receive(:start_threaded).and_yield(step)
+        Retriable.configure do |c|
+          c.sleep_disabled = true
+        end
+      end
+
+      it 'passes if the ci status returns with non-zero status' do
+        expect(subject).to receive(:sh_out).with("hub ci-status --verbose #{sha}", anything)
+          .and_return(ci_statuses)
+        expect(step).to receive(:success)
+        expect(subject.send(:check_ci_status, sha)).to eq(ci_statuses)
+      end
+
+      it 'should fail if status does not exit non zero within time limit' do
+        expect(subject).to receive(:sh_out).with("hub ci-status --verbose #{sha}", anything)
+          .and_raise(Shell::CommandError).at_least(:twice)
+        expect { subject.send(:check_ci_status, sha) }.to raise_error(Shell::CommandError)
+      end
+    end
   end
 end

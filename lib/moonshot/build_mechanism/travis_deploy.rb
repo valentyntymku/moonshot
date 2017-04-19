@@ -68,32 +68,18 @@ module Moonshot::BuildMechanism
     #
     # @return [String] Job number for the travis build.
     def wait_for_build(version)
+      # Attempt to find the build. Re-attempt if the build can not
+      # be found on travis yet.
+      retry_opts = {
+        tries: MAX_BUILD_FIND_ATTEMPTS,
+        base_interval: 10
+      }
       job_number = nil
-      attempts = 0
-      loop do
-        # Give travis some time to start the build.
-        attempts += 1
-        sleep 10
-
-        # Attempt to find the build. Rescue and re-attempt if the build can not
-        # be found on travis yet.
-        begin
-          build_out = sh_out("bundle exec travis show #{@cli_args} #{version}")
-        rescue RuntimeError => e
-          next unless attempts >= MAX_BUILD_FIND_ATTEMPTS
-          raise e
-        end
-
-        unless (job_number = build_out.match(/^#(\d+\.\d+) .+BUILD=1.+/)[1])
-          next unless attempts >= MAX_BUILD_FIND_ATTEMPTS
-          raise "Build for #{version} not found.\n#{build_out}"
-        end
-
-        # If we've reached this point then everything went smoothly and we can
-        # exit the loop.
-        break
+      sh_retry("bundle exec travis show #{@cli_args} #{version}",
+               opts: retry_opts) do |build_out|
+        raise CommandError, "Build for #{version} not found.\n#{build_out}" \
+          unless (job_number = build_out.match(/^#(\d+\.\d+) .+BUILD=1.+/)[1])
       end
-
       job_number
     end
 
