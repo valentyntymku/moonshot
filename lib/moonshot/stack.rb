@@ -220,7 +220,7 @@ module Moonshot
         begin
           cf_client.wait_until(wait_target, stack_name: stack_id) do |w|
             w.delay = 10
-            w.max_attempts = 180 # 30 minutes.
+            w.max_attempts = 360 # 60 minutes.
             w.before_wait do |attempt, resp|
               begin
                 events.latest_events.each { |e| @ilog.error(format_event(e)) }
