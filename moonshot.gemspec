@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'moonshot'
-  s.version     = '2.0.0.beta2'
+  s.version     = '2.0.0.beta3'
   s.licenses    = ['Apache-2.0']
   s.summary     = 'A library and CLI tool for launching services into AWS'
   s.description = 'A library and CLI tool for launching services into AWS.'
@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
     'Cloud Engineering <engineering@acquia.com>'
   ]
   s.email       = 'engineering@acquia.com'
-  s.files       = Dir['lib/**/*.rb'] + Dir['bin/*']
+  s.files       = Dir['lib/**/*.rb'] + Dir['lib/default/**/*'] + Dir['bin/*']
   s.bindir      = 'bin'
   s.executables = ['moonshot']
   s.homepage    = 'https://github.com/acquia/moonshot'
