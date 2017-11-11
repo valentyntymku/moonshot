@@ -5,6 +5,7 @@ describe Moonshot::Stack do
   let(:ilog) { Moonshot::InteractiveLoggerProxy.new(log) }
   let(:parent_stacks) { [] }
   let(:cf_client) { instance_double(Aws::CloudFormation::Client) }
+  let(:s3_client) { instance_double(Aws::S3::Client) }
 
   let(:config) { Moonshot::ControllerConfig.new }
   before(:each) do
@@ -14,6 +15,7 @@ describe Moonshot::Stack do
     config.parent_stacks = parent_stacks
 
     allow(Aws::CloudFormation::Client).to receive(:new).and_return(cf_client)
+    allow(Aws::S3::Client).to receive(:new).and_return(s3_client)
   end
 
   subject { described_class.new(config) }
@@ -23,9 +25,9 @@ describe Moonshot::Stack do
     let(:stack_exists) { false }
 
     before(:each) do
-      expect(ilog).to receive(:start).and_yield(step)
+      expect(ilog).to receive(:start).at_least(:once).and_yield(step)
       expect(subject).to receive(:stack_exists?).and_return(stack_exists)
-      expect(step).to receive(:success)
+      expect(step).to receive(:success).at_least(:once)
     end
 
     context 'when the stack creation takes too long' do
@@ -88,9 +90,39 @@ describe Moonshot::Stack do
 
       it 'should call CreateStack, then wait for completion' do
         config.additional_tag = 'ah_stage'
+        expect(s3_client).not_to receive(:put_object)
         expect(cf_client).to receive(:create_stack)
           .with(hash_including(expected_create_stack_options))
         subject.create
+      end
+
+      context 'when template_s3_bucket is set' do
+        before(:each) do
+          config.template_s3_bucket = 'rspec-bucket'
+          allow(Time).to receive(:now).and_return(Time.new('2017-11-07 12:00:00 +0000'))
+        end
+
+        let(:expected_put_object_options) do
+          {
+            bucket: config.template_s3_bucket,
+            key: 'rspec-app-staging-1483228800-template.yml',
+            body: an_instance_of(String)
+          }
+        end
+
+        let(:expected_create_stack_options) do
+          {
+            template_url: 'http://rspec-bucket.s3.amazonaws.com/rspec-app-staging-1483228800-template.yml'
+          }
+        end
+
+        it 'should call put_object and create_stack with template_url parameter' do
+          expect(s3_client).to receive(:put_object)
+            .with(hash_including(expected_put_object_options))
+          expect(cf_client).to receive(:create_stack)
+            .with(hash_including(expected_create_stack_options))
+          subject.create
+        end
       end
     end
   end
