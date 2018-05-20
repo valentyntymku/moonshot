@@ -73,34 +73,13 @@ module Moonshot
       retry
     end
 
-    # NOTE: At the time of this patch, AWS-SDK native Waiters do not
-    # have support for ChangeSets. Once they add this, we can make
-    # this code much better.
-    # Still no support for this waiter, but it's planned.
-    # https://github.com/aws/aws-sdk-ruby/issues/1388
     def wait_for_change_set
-      wait_seconds = Moonshot.config.changeset_wait_time || 90
-      start = Time.now.to_i
+      @cf_client.wait_until(:change_set_create_complete,
+                            stack_name: @stack_name,
+                            change_set_name: @name)
 
-      loop do
-        resp = @cf_client.describe_change_set(
-          change_set_name: @name,
-          stack_name: @stack_name)
-
-        if %w(CREATE_COMPLETE FAILED).include?(resp.status)
-          @change_set = resp
-          return
-        end
-
-        if Time.now.to_i > start + wait_seconds
-          raise "ChangeSet did not complete creation within #{wait_seconds} seconds!"
-        end
-
-        sleep 5 # http://bit.ly/1qY1ZXJ
-        # Wait 5 seconds because other waiters seem to wait at least 5 seconds
-        # before repeating requests.
-        # See: https://github.com/aws/aws-sdk-ruby/blob/master/aws-sdk-core/apis/cloudformation/2010-05-15/waiters-2.json#L5
-      end
+      @change_set = @cf_client.describe_change_set(stack_name: @stack_name,
+                                                   change_set_name: @name)
     end
   end
 end
