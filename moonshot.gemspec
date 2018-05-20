@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'moonshot'
-  s.version     = '2.0.0.beta5'
+  s.version     = '2.0.0.beta6'
   s.licenses    = ['Apache-2.0']
   s.summary     = 'A library and CLI tool for launching services into AWS'
   s.description = 'A library and CLI tool for launching services into AWS.'
@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
   s.add_dependency('travis')
   s.add_dependency('vandamme')
   s.add_dependency('pry')
-  s.add_dependency('require_all')
+  s.add_dependency('require_all', '~> 1.5.0')
 
   s.add_development_dependency('rspec')
   s.add_development_dependency('simplecov')
