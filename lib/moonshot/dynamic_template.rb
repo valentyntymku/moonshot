@@ -23,6 +23,8 @@ module Moonshot
     end
 
     def initialize(source:, parameters:, destination:)
+      puts 'DT:'
+      puts Moonshot.config.environment_name
       @source = File.read(source)
       @parameters = Parameters.new(parameters.(Moonshot.config.environment_name))
       @destination = destination
