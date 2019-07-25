@@ -24,7 +24,7 @@ module Moonshot
 
     def initialize(source:, parameters:, destination:)
       @source = File.read(source)
-      @parameters = Parameters.new(parameters)
+      @parameters = Parameters.new(parameters.(Moonshot.config.environment_name))
       @destination = destination
     end
 
