@@ -25,6 +25,8 @@ module Moonshot
 
         o.on('-nNAME', '--environment=NAME', 'Which environment to operate on.') do |v|
           Moonshot.config.environment_name = v
+          puts 'Command env:'
+          puts Moonshot.config.environment_name
         end
 
         o.on('--[no-]interactive-logger', TrueClass, 'Enable or disable fancy logging') do |v|
