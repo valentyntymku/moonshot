@@ -1,3 +1,5 @@
+require 'optparse'
+
 module Moonshot
   # Holds configuration for Moonshot::Controller
   class ControllerConfig
@@ -49,6 +51,13 @@ module Moonshot
 
       user = ENV.fetch('USER', 'default-user').gsub(/\W/, '')
       @environment_name = "dev-#{user}"
+
+      OptionParser.new do |o|
+        o.on('-nNAME', '--environment=NAME', 'Which environment to operate on.') do |v|
+          @environment_name = v
+        end
+      end
+
     end
 
     def in_account(name, &blk)
