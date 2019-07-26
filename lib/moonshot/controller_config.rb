@@ -50,14 +50,16 @@ module Moonshot
       end
 
       user = ENV.fetch('USER', 'default-user').gsub(/\W/, '')
-      @environment_name = "dev-#{user}"
-
+#      @environment_name = "dev-#{user}"
+      puts 'CC_env1:'
+      puts @environment_name
       OptionParser.new do |o|
         o.on('-nNAME', '--environment=NAME', 'Which environment to operate on.') do |v|
           @environment_name = v
         end
       end
-
+      puts 'CC_env2:'
+      puts @environment_name
     end
 
     def in_account(name, &blk)
