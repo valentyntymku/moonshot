@@ -11,6 +11,7 @@ module Moonshot
 
       def pre_create(res)
         puts 'DT pre_create hook!1'
+        puts Moonshot.config.environment_name
       end
 
       def run_hook
