@@ -30,7 +30,7 @@ module Moonshot
       @destination = destination
     end
 
-    def pre_change(resources)
+    def pre_create(resources)
       puts 'hello from pre_change DT!'
     end
 
