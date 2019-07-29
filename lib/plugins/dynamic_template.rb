@@ -14,7 +14,7 @@ module Moonshot
       end
 
       def run_hook
-        @dynamic_template.process
+        @dynamic_template.process(resources)
       end
 
       # Moonshot hooks to trigger this plugin.
