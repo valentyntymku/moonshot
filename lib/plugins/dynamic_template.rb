@@ -10,9 +10,10 @@ module Moonshot
         )
       end
 
-      def pre_create123(res)
+      def pre_create(res)
         puts 'DT pre_create hook!1'
         puts Moonshot.config.environment_name
+        @dynamic_template.process
       end
 
       def run_hook
