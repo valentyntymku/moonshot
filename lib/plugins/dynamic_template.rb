@@ -9,7 +9,7 @@ module Moonshot
         )
       end
 
-      def pre_create(res)
+      def pre_create123(res)
         puts 'DT pre_create hook!1'
         puts Moonshot.config.environment_name
       end
@@ -19,8 +19,10 @@ module Moonshot
       end
 
       # Moonshot hooks to trigger this plugin.
-      alias setup_create run_hook
-      alias setup_update run_hook
+      alias pre_create run_hook
+      alias pre_update run_hook
+#      alias setup_create run_hook
+#      alias setup_update run_hook
     end
   end
 end

@@ -30,10 +30,10 @@ module Moonshot
       @destination = destination
     end
 
-    def pre_create(res)
-      puts 'hello from pre_change DT!'
-      puts Moonshot.config.environment_name
-    end
+#    def pre_create(res)
+#      puts 'hello from pre_change DT!'
+#      puts Moonshot.config.environment_name
+#    end
 
     def process
       validate_destination_exists
