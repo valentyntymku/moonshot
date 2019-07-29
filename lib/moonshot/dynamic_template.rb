@@ -30,6 +30,10 @@ module Moonshot
       @destination = destination
     end
 
+    def pre_change(resources)
+      puts 'hello from pre_change DT!'
+    end
+
     def process
       validate_destination_exists
       new_template = generate_template
