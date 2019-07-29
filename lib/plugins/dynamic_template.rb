@@ -9,7 +9,7 @@ module Moonshot
         )
       end
 
-      def pre_create
+      def pre_create(res)
         puts 'DT pre_create hook!1'
       end
 

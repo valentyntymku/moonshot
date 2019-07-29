@@ -30,7 +30,7 @@ module Moonshot
       @destination = destination
     end
 
-    def pre_create
+    def pre_create(res)
       puts 'hello from pre_change DT!'
       puts Moonshot.config.environment_name
     end
