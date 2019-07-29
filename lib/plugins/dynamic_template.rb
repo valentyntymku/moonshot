@@ -22,9 +22,9 @@ module Moonshot
       end
 
       # Moonshot hooks to trigger this plugin.
-      alias post_cli run_hook
+#      alias post_cli run_hook
 #      alias pre_update run_hook
-#      alias setup_create run_hook
+      alias setup_create run_hook
 #      alias setup_update run_hook
     end
   end
