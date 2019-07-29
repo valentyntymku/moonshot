@@ -2,6 +2,7 @@ module Moonshot
   module Plugins
     class DynamicTemplate
       def initialize(source:, parameters:, destination:)
+        puts 'init plugin dynTemplates'
         @dynamic_template = ::Moonshot::DynamicTemplate.new(
           source: source,
           parameters: parameters,
@@ -15,6 +16,7 @@ module Moonshot
       end
 
       def run_hook
+        puts 'Run hook...'
         @dynamic_template.process
       end
 

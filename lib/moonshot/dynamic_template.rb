@@ -23,7 +23,7 @@ module Moonshot
     end
 
     def initialize(source:, parameters:, destination:)
-      puts 'DT:'
+      puts 'DT init... 1232'
       puts Moonshot.config.environment_name
       @source = File.read(source)
       @parameters = Parameters.new(parameters.(Moonshot.config.environment_name))
@@ -36,6 +36,7 @@ module Moonshot
 #    end
 
     def process
+      puts 'process...'
       validate_destination_exists
       new_template = generate_template
 
