@@ -9,6 +9,10 @@ module Moonshot
         )
       end
 
+      def pre_create
+        puts 'DT pre_create hook!1'
+      end
+
       def run_hook
         @dynamic_template.process
       end
