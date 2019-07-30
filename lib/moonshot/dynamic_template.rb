@@ -24,12 +24,16 @@ module Moonshot
 
     def initialize(source:, parameters:, destination:)
       @source = File.read(source)
-      @parameters = Parameters.new(parameters)
+      @parameters = parameters
       @destination = destination
     end
 
     def process
       validate_destination_exists
+
+      @parameters = Parameters.new(
+        @parameters.call(Moonshot.config.environment_name)
+      )
       new_template = generate_template
 
       validate_template(new_template)

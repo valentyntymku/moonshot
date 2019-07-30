@@ -4,7 +4,7 @@ describe Moonshot::DynamicTemplate do
   include FakeFS::SpecHelpers
 
   let(:source_path) { 'spec_template.erb' }
-  let(:parameters) { { test_param: 'test-value' } }
+  let(:parameters) { -> environment_name { parameters = { test_param: 'test-value' } } }
   let(:destination_path) { 'spec_template.json' }
 
   let(:source_content) do
@@ -36,7 +36,7 @@ describe Moonshot::DynamicTemplate do
 
     after(:each) { subject }
 
-    it 'should validate that the destination file does not exist' do
+    it 'should validate that the destination file does not exists' do
       expect(test_object).to receive(:validate_destination_exists)
     end
 
@@ -61,6 +61,7 @@ describe Moonshot::DynamicTemplate do
     it 'should raise an exception if the destination file exists' do
       expect { subject }.to raise_error(
         Moonshot::TemplateExists,
+
         /Output file '#{destination_path}' already exists./
       )
     end
